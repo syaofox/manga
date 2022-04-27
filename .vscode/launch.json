@@ -1,0 +1,20 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/manga.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                // "Z:\\medias\\books\\comic\\连载\\[岡本倫]平行天堂\\manhuagui.json"
+                "https://tw.manhuagui.com/comic/1470/"
+            ]
+        }
+    ]
+}

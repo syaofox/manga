@@ -1,0 +1,11 @@
+aiohttp
+Pillow
+playwright
+pyquery
+requests
+tqdm
+yapf
+fire
+lzstring
+loguru
+yapf
