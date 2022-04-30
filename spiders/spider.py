@@ -71,12 +71,8 @@ class Spider:
                 await browser.close()
 
     async def fetch_page(self, url, browser: BrowserContext, parse_method, retry=0, param=None):
-        pages = len(browser.pages)
 
-        if pages > 0:
-            page = browser.pages[0]
-        else:
-            page = await browser.new_page()
+        page = await browser.new_page()
 
         try:
             await parse_method(browser, page, url, param)
@@ -93,5 +89,5 @@ class Spider:
                 Logouter.red(e.message)
                 Logouter.red(f'页面{url}打开错误,重试超过最大次数')
 
-        # finally:
-        #     await page.close()
+        finally:
+            await page.close()
