@@ -86,8 +86,9 @@ class Comic18Paser(Parser):
         param['cover_imgdatas'] = {}
 
         async def handle_response(response: Response):
-            await response.finished()
+
             if response.ok and (response.request.resource_type == "image"):
+                await response.finished()
                 imgdata = await response.body()
                 Logouter.pic_crawed += 1
                 Logouter.crawlog()
@@ -178,10 +179,10 @@ class Comic18Paser(Parser):
         param['busy'] = True
 
         async def handle_response(response: Response):
-            await response.finished()
+
             if response.ok:
                 if (response.request.resource_type == "image"):
-
+                    await response.finished()
                     Logouter.pic_crawed += 1
                     Logouter.crawlog()
 
@@ -220,10 +221,11 @@ class Comic18Paser(Parser):
                     break
             if allparsed:
                 break
-            await asyncio.sleep(0.3)
+            # await asyncio.sleep(0.3)
 
             cur_pos = min(param['pices_count'], cur_pos)
-            await page.locator('#pageselect').select_option(str(cur_pos))
+            # await page.locator('#pageselect').select_option(str(cur_pos))
+            await page.keyboard.press('End')
             await page.wait_for_load_state('networkidle')
             cur_pos += 1
             #

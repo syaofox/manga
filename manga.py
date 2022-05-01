@@ -32,7 +32,7 @@ def start_craw(start_url, headless=False, szip=False):
 
     elif '18comic' in Comic.main_url:
 
-        parser = Comic18exParser()
+        parser = Comic18Paser()
         config = Config(parser.name, ccount=1, headless=headless)
 
     elif 'baozimh' in start_url:
