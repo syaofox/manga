@@ -1,5 +1,6 @@
 import asyncio
 import re
+from time import time
 import urllib
 import lzstring
 import os
@@ -10,7 +11,7 @@ from mods.logouter import Logouter
 from mods.utils import md5, extrat_extname, extrat_fname, valid_filename
 from mods.zipper import Zipper
 from parsers.parser import Parser
-from playwright.async_api import Page, Response, Error
+from playwright.async_api import Page, Response, Error, BrowserContext
 from mods.picchecker import PicChecker
 from PIL import Image
 
@@ -82,7 +83,7 @@ class Comic18Paser(Parser):
         if await btn2.is_visible():
             await page.locator('text=確定進入！').click()
 
-    async def parse_main_page(self, page: Page, url, param=None):
+    async def parse_main_page(self, browser: BrowserContext, page: Page, url, param=None):
         param['cover_imgdatas'] = {}
 
         async def handle_response(response: Response):
@@ -90,8 +91,8 @@ class Comic18Paser(Parser):
             if response.ok and (response.request.resource_type == "image"):
                 await response.finished()
                 imgdata = await response.body()
-                Logouter.pic_crawed += 1
-                Logouter.crawlog()
+                # Logouter.pic_crawed += 1
+                # Logouter.crawlog()
 
                 imgdata = await response.body()
                 param['cover_imgdatas'][md5(response.url)] = imgdata
@@ -162,7 +163,7 @@ class Comic18Paser(Parser):
         Logouter.crawlog()
         Comic.save_to_json()
 
-    async def parse_chapter_page(self, page: Page, url, param=None):
+    async def parse_chapter_page(self, browser: BrowserContext, page: Page, url, param=None):
 
         param['chapter_url'] = url
         categories_str = valid_filename(f'{param["categories"]}')
@@ -183,9 +184,6 @@ class Comic18Paser(Parser):
             if response.ok:
                 if (response.request.resource_type == "image"):
                     await response.finished()
-                    Logouter.pic_crawed += 1
-                    Logouter.crawlog()
-
                     # 保存页面上的图像数据
                     imgdata = await response.body()
                     param['pices_datas'][md5(response.url)] = imgdata
@@ -200,42 +198,14 @@ class Comic18Paser(Parser):
         await page.wait_for_load_state('networkidle')
 
         await page.wait_for_load_state('networkidle')
-        html = await page.content()
 
-        doc = pq(html)
-        els = doc('div.panel-body>div.row.thumb-overlay-albums>div>img')
+        els = await page.query_selector_all('div.panel-body>div.row.thumb-overlay-albums>div>img')
+
         param['pices_count'] = len(els)
         Logouter.pic_total += param['pices_count']
         Logouter.crawlog()
 
-        cur_pos = 1
-
-        # 判断是否所有图片都缓存到
-        while True:
-            allparsed = True
-            for el in els.items():
-                purl = el.attr('data-original').strip()
-                keystr = md5(purl)
-                if not keystr in param['pices_datas'].keys():
-                    allparsed = False
-                    break
-            if allparsed:
-                break
-            # await asyncio.sleep(0.3)
-
-            cur_pos = min(param['pices_count'], cur_pos)
-            # await page.locator('#pageselect').select_option(str(cur_pos))
-            await page.keyboard.press('End')
-            await page.wait_for_load_state('networkidle')
-            cur_pos += 1
-            #
-
-            if cur_pos >= param['pices_count']:
-                cur_pos = 1
-
-        await page.wait_for_load_state('networkidle')
-
-        ## 解密参数
+        html = await page.content()
         is_need_fix = False
         ids = re.search(r'<script>.*?var.*?scramble_id.*?=.*?(\d+);.*?var.*?aid.*?=.*?(\d+);', html, re.S)
         aid = 0
@@ -244,36 +214,74 @@ class Comic18Paser(Parser):
             aid = int(ids.group(2))
             is_need_fix = (aid >= scramble_id)
 
-        for i, el in enumerate(els.items()):
-            purl = el.attr('data-original').strip()
+        purls = {}
+
+        for i, el in enumerate(els):
+            purl = await el.get_attribute('data-original')
             pic_fname = os.path.join(param['chapter_dir'], f'{str(i).zfill(4)}.{extrat_extname(purl)}')
-            if os.path.exists(pic_fname):
-                if PicChecker.valid_pic(pic_fname):
+            purls[md5(purl)] = {'url': purl, 'fname': pic_fname}
+
+        cur_pos = 1
+        downloaded = 0
+
+        # 判断是否所有图片都缓存到
+        while True:
+            await page.query_selector_all('div.panel-body>div.row.thumb-overlay-albums>div>img.lazy_img.img-responsive-mw.lazy-loaded')
+
+            for urlmd5, pic_data in purls.copy().items():
+                pic_fname = pic_data['fname']
+                pic_url = pic_data['url']
+                imgdata = param['pices_datas'].get(urlmd5, None)
+                if not imgdata:
                     continue
-                else:
+
+                if os.path.exists(pic_fname):
+                    if PicChecker.valid_pic(pic_fname):
+                        param['pices_datas'].pop(urlmd5)
+                        purls.pop(urlmd5)
+                        Logouter.pic_crawed += 1
+                        downloaded += 1
+                        Logouter.crawlog()
+                        continue
+                    else:
+                        os.remove(pic_fname)
+
+                with open(pic_fname, 'wb') as f:
+                    f.write(imgdata)
+
+                if not PicChecker.valid_pic(pic_fname):
                     os.remove(pic_fname)
+                    Logouter.pic_failed += 1
+                    Logouter.crawlog()
+                    raise Exception(f'下载失败！下载图片不完整={pic_fname}')
 
-            keystr = md5(purl)
-            imgdata = param['pices_datas'].get(keystr, None)
-            if not imgdata:
-                Logouter.red(f'漏网{purl}')
-                continue
+                fixparm = 0
 
-            with open(pic_fname, 'wb') as f:
-                f.write(imgdata)
+                if 'media/photos' in pic_url and is_need_fix:  # 对非漫画图片连接直接放行
+                    fixparm = self.get_rows(aid, pic_url)
 
-            if not PicChecker.valid_pic(pic_fname):
-                os.remove(pic_fname)
-                Logouter.pic_failed += 1
+                if fixparm > 0:
+                    self.fix_jpg20(pic_fname, fixparm)
+
+                Logouter.pic_crawed += 1
+                downloaded += 1
                 Logouter.crawlog()
-                raise Exception(f'下载失败！下载图片不完整={pic_fname}')
 
-            fixparm = 0
-            if 'media/photos' in purl and is_need_fix:  # 对非漫画图片连接直接放行
-                fixparm = self.get_rows(aid, purl)
+                param['pices_datas'].pop(urlmd5)
+                purls.pop(urlmd5)
 
-            if fixparm > 0:
-                self.fix_jpg20(pic_fname, fixparm)
+            if downloaded == param['pices_count']:
+                break
+
+            cur_pos = min(param['pices_count'], cur_pos)
+            await page.locator('#pageselect').select_option(str(cur_pos))
+            await page.wait_for_load_state('networkidle')
+            cur_pos += 1
+
+            if cur_pos >= param['pices_count']:
+                cur_pos = 1
+
+        await page.wait_for_load_state('networkidle')
 
         downloaded_count = Zipper.count_dir(param['chapter_dir'])
         if downloaded_count == param['pices_count']:

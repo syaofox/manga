@@ -10,7 +10,7 @@ from mods.logouter import Logouter
 from mods.utils import md5, extrat_extname, extrat_fname, valid_filename
 from mods.zipper import Zipper
 from parsers.parser import Parser
-from playwright.async_api import Page, Response, Error
+from playwright.async_api import Page, Response, Error, BrowserContext
 from mods.picchecker import PicChecker
 
 
@@ -20,7 +20,7 @@ class KlmagPaser(Parser):
     def name(self):
         return 'klmag'
 
-    async def parse_main_page(self, page: Page, url, param=None):
+    async def parse_main_page(self, browser: BrowserContext, page: Page, url, param=None):
         param['cover_imgdatas'] = {}
 
         async def handle_response(response: Response):
@@ -91,7 +91,7 @@ class KlmagPaser(Parser):
         Logouter.crawlog()
         Comic.save_to_json()
 
-    async def parse_chapter_page(self, page: Page, url, param=None):
+    async def parse_chapter_page(self, browser: BrowserContext, page: Page, url, param=None):
         param['chapter_url'] = url
         categories_str = valid_filename(f'{param["categories"]}')
         chapter_str = valid_filename(f'{param["chapter"]}')
