@@ -14,6 +14,7 @@ from parsers.parser import Parser
 from playwright.async_api import Page, Response, Error, BrowserContext
 from mods.picchecker import PicChecker
 from PIL import Image
+from io import BytesIO
 
 
 class Comic18Paser(Parser):
@@ -73,6 +74,37 @@ class Comic18Paser(Parser):
             return True
         except Exception:
             return False
+
+    @staticmethod
+    def fix_jpgdata(img_data, num=0):
+        """
+        该函数对某个文件夹下的图片进行解密并在指定文件夹存储
+        """
+        if num == 0:
+            return img_data
+        stream = BytesIO(img_data)
+        source_img = Image.open(stream).convert("RGBA")
+        w, h = source_img.size
+        decode_img = Image.new("RGB", (w, h))
+        remainder = h % num
+        copyW = w
+        try:
+            for i in range(num):
+                copyH = math.floor(h / num)
+                py = copyH * i
+                y = h - (copyH * (i + 1)) - remainder
+                if i == 0:
+                    copyH = copyH + remainder
+                else:
+                    py = py + remainder
+                temp_img = source_img.crop((0, y, copyW, y + copyH))
+                decode_img.paste(temp_img, (0, py, copyW, py + copyH))
+            return decode_img
+
+        except Exception:
+            return False
+        finally:
+            stream.close()
 
     async def click_popup(self, page: Page):
         btn1 = await page.query_selector('text=我保證我已满18歲！')
@@ -246,22 +278,25 @@ class Comic18Paser(Parser):
                     else:
                         os.remove(pic_fname)
 
-                with open(pic_fname, 'wb') as f:
-                    f.write(imgdata)
+                fixparm = 0
+
+                if 'media/photos' in pic_url and is_need_fix:  # 对非漫画图片连接直接放行
+                    fixparm = self.get_rows(aid, pic_url)
+
+                file_data = imgdata
+                if fixparm > 0:
+                    file_data = self.fix_jpgdata(imgdata, fixparm)
+                    file_data.save(pic_fname)
+
+                else:
+                    with open(pic_fname, 'wb') as f:
+                        f.write(file_data)
 
                 if not PicChecker.valid_pic(pic_fname):
                     os.remove(pic_fname)
                     Logouter.pic_failed += 1
                     Logouter.crawlog()
                     raise Exception(f'下载失败！下载图片不完整={pic_fname}')
-
-                fixparm = 0
-
-                if 'media/photos' in pic_url and is_need_fix:  # 对非漫画图片连接直接放行
-                    fixparm = self.get_rows(aid, pic_url)
-
-                if fixparm > 0:
-                    self.fix_jpg20(pic_fname, fixparm)
 
                 Logouter.pic_crawed += 1
                 downloaded += 1
