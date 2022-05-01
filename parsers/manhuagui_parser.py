@@ -41,8 +41,9 @@ class ManhuaguiPaser(Parser):
         param['cover_imgdatas'] = {}
 
         async def handle_response(response: Response):
-            await response.finished()
+
             if response.ok and (response.request.resource_type == "image"):
+                await response.finished()
                 imgdata = await response.body()
                 param['cover_imgdatas'][md5(response.url)] = imgdata
 
@@ -194,11 +195,11 @@ class ManhuaguiPaser(Parser):
 
         async def handle_response(response: Response):
 
-            await response.finished()
             if response.ok:
                 if (response.request.resource_type == "image"):
 
                     # 保存页面上的图像数据
+                    await response.finished()
                     imgdata = await response.body()
                     param['pices_datas'][md5(response.url)] = imgdata
 

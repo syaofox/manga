@@ -33,6 +33,8 @@ class Spider:
 
             if os.path.exists(test_zip_file):
                 chapter['status'] = 1
+                Logouter.chapter_successed += 1
+                Logouter.crawlog()
 
             if chapter['status'] == 0:
 
