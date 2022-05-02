@@ -260,7 +260,13 @@ class ManhuaguiPaser(Parser):
                     os.remove(pic_fname)
                     Logouter.pic_failed += 1
                     Logouter.crawlog()
-                    raise Exception(f'下载失败！下载图片不完整={pic_fname}')
+
+                    param['pices_datas'].pop(urlmd5)
+                    purls.pop(urlmd5)
+
+                    Logouter.red(f'\n下载失败！下载图片不完整={pic_fname}')
+                    continue
+                    # raise Exception(f'下载失败！下载图片不完整={pic_fname}')
 
                 param['pices_datas'].pop(urlmd5)
                 purls.pop(urlmd5)

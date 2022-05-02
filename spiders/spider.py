@@ -22,27 +22,45 @@ class Spider:
         loop.run_until_complete(self.start_crawl_task())
         Logouter.blue('信息爬取完成!')
 
-    async def parse_chapters(self, chapter, context):
-        async with self.semaphore_crawl:
-            # 爬取每个章节图片
-            categories_str = valid_filename(f'{chapter["categories"]}')
-            chapter_str = valid_filename(f'{chapter["title"]}')
+    async def parse_chapters(self, chapter, context, retry=0):
 
-            chapter_dir = os.path.join(Comic.get_full_comicdir(), categories_str, chapter_str)
-            test_zip_file = f'{chapter_dir}.zip'
+        try:
+            async with self.semaphore_crawl:
+                # 爬取每个章节图片
+                categories_str = valid_filename(f'{chapter["categories"]}')
+                chapter_str = valid_filename(f'{chapter["title"]}')
 
-            if os.path.exists(test_zip_file):
-                chapter['status'] = 1
-                Logouter.chapter_successed += 1
+                chapter_dir = os.path.join(Comic.get_full_comicdir(), categories_str, chapter_str)
+                test_zip_file = f'{chapter_dir}.zip'
+
+                if os.path.exists(test_zip_file):
+                    chapter['status'] = 1
+                    Logouter.chapter_successed += 1
+                    Logouter.crawlog()
+
+                if chapter['status'] == 0:
+
+                    #{'categories': '單話', 'title': '第13話(19p)', 'url': 'https://tw.manhuagui.com/comic/36962/550128.html', 'status': 0}
+                    await self.fetch_page(chapter['url'], context, self.parser.parse_chapter_page, param={'url': chapter['url'], 'categories': categories_str, 'chapter': chapter_str})
+
+                    Logouter.chapter_successed += 1
+                    Logouter.crawlog()
+        except Exception as e:
+            Logouter.yellow(e)
+
+            nretry = retry
+            nretry += 1
+            if nretry <= 5:
+
+                Logouter.yellow(f'页面{chapter["url"]}打开错误,重试={nretry}')
+                await asyncio.sleep(5)
+                await self.parse_chapters(chapter, context, retry=nretry)
+
+            else:
+                Logouter.red(e)
+                Logouter.pic_failed += 1
                 Logouter.crawlog()
-
-            if chapter['status'] == 0:
-
-                #{'categories': '單話', 'title': '第13話(19p)', 'url': 'https://tw.manhuagui.com/comic/36962/550128.html', 'status': 0}
-                await self.fetch_page(chapter['url'], context, self.parser.parse_chapter_page, param={'url': chapter['url'], 'categories': categories_str, 'chapter': chapter_str})
-
-                Logouter.chapter_successed += 1
-                Logouter.crawlog()
+                Logouter.red(f'页面{chapter["url"]}打开错误,重试超过最大次数')
 
     async def start_crawl_task(self):
 
