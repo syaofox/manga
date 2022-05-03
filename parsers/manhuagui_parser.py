@@ -226,7 +226,7 @@ class ManhuaguiPaser(Parser):
 
             await page.locator('#next').click()
 
-            await page.wait_for_load_state("networkidle")
+            # await page.wait_for_load_state("networkidle")
             # 等待图片加载完成
             await page.wait_for_selector('#imgLoading', state='hidden')
 
