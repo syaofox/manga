@@ -133,67 +133,67 @@ class ManhuaguiPaser(Parser):
         """
         return not ('/images/' in url)
 
-    async def parse_pices(self, page: Page, url, param=None):
-        """抓取章节图片
+    # async def parse_pices(self, page: Page, url, param=None):
+    #     """抓取章节图片
 
-        Args:
-            page (Page): _description_
-            url (_type_): _description_
-            param (_type_, optional): _description_. Defaults to None.
-        """
-        await page.wait_for_selector('#mangaFile')
+    #     Args:
+    #         page (Page): _description_
+    #         url (_type_): _description_
+    #         param (_type_, optional): _description_. Defaults to None.
+    #     """
+    #     await page.wait_for_selector('#mangaFile')
 
-        html = await page.content()
-        doc = pq(html)
+    #     html = await page.content()
+    #     doc = pq(html)
 
-        if await page.query_selector('#checkAdult'):
-            await page.click('#checkAdult')
+    #     if await page.query_selector('#checkAdult'):
+    #         await page.click('#checkAdult')
 
-        count_info = doc('body > div.w980.title > div:nth-child(2) > span').text()
-        idxs = re.search(r'\((\d+)/(\d+)\)', count_info)
-        cur_idx = int(idxs.group(1))
-        page_count = int(idxs.group(2))
-        Logouter.pic_total += page_count
-        Logouter.crawlog()
+    #     count_info = doc('body > div.w980.title > div:nth-child(2) > span').text()
+    #     idxs = re.search(r'\((\d+)/(\d+)\)', count_info)
+    #     cur_idx = int(idxs.group(1))
+    #     page_count = int(idxs.group(2))
+    #     Logouter.pic_total += page_count
+    #     Logouter.crawlog()
 
-        while True:
-            await asyncio.sleep(0.1)
-            if not param['busy']:
-                param['busy'] = True
-                if cur_idx < page_count:
-                    await page.locator('#next').click()
+    #     while True:
+    #         await asyncio.sleep(0.1)
+    #         if not param['busy']:
+    #             param['busy'] = True
+    #             if cur_idx < page_count:
+    #                 await page.locator('#next').click()
 
-                    await page.wait_for_load_state("networkidle")
+    #                 await page.wait_for_load_state("networkidle")
 
-                    html = await page.content()
-                    doc = pq(html)
+    #                 html = await page.content()
+    #                 doc = pq(html)
 
-                    count_info = doc('body > div.w980.title > div:nth-child(2) > span').text()
-                    idxs = re.search(r'\((\d+)/(\d+)\)', count_info)
-                    cur_idx = int(idxs.group(1))
-                    page_count = int(idxs.group(2))
+    #                 count_info = doc('body > div.w980.title > div:nth-child(2) > span').text()
+    #                 idxs = re.search(r'\((\d+)/(\d+)\)', count_info)
+    #                 cur_idx = int(idxs.group(1))
+    #                 page_count = int(idxs.group(2))
 
-                if cur_idx >= page_count:
+    #             if cur_idx >= page_count:
 
-                    downloaded_count = Zipper.count_dir(param['chapter_dir'])
-                    if downloaded_count == page_count:
-                        Zipper.zip(param['chapter_dir'])
-                        Comic.chapters[md5(url)]['status'] = 1
-                        Comic.save_to_json()
-                    break
+    #                 downloaded_count = Zipper.count_dir(param['chapter_dir'])
+    #                 if downloaded_count == page_count:
+    #                     Zipper.zip(param['chapter_dir'])
+    #                     Comic.chapters[md5(url)]['status'] = 1
+    #                     Comic.save_to_json()
+    #                 break
 
     async def parse_chapter_page(self, browser: BrowserContext, page: Page, url, param=None):
 
-        param['chapter_url'] = url
+        # param['chapter_url'] = url
         categories_str = valid_filename(f'{param["categories"]}')
         chapter_str = valid_filename(f'{param["chapter"]}')
         chapter_dir = os.path.join(Comic.get_full_comicdir(), categories_str, chapter_str)
 
-        param['chapter_dir'] = chapter_dir
+        # param['chapter_dir'] = chapter_dir
         if not os.path.exists(chapter_dir):
             os.makedirs(chapter_dir)
 
-        param['pices_count'] = 0
+        # param['pices_count'] = 0
         # param['pices_datas'] = {}
 
         self.pices_data = {}
@@ -225,7 +225,7 @@ class ManhuaguiPaser(Parser):
 
         purls = {}
 
-        self.set_purls(param, doc, cur_idx, purls)
+        self.set_purls(param, doc, cur_idx, purls, chapter_dir)
 
         while True:
 
@@ -240,7 +240,7 @@ class ManhuaguiPaser(Parser):
 
             cur_idx, page_count = self.get_page_num(doc)
 
-            self.set_purls(param, doc, cur_idx, purls)
+            self.set_purls(param, doc, cur_idx, purls, chapter_dir)
 
             for urlmd5, pic_fname in purls.copy().items():
 
@@ -280,7 +280,7 @@ class ManhuaguiPaser(Parser):
                 Logouter.crawlog()
 
             if cur_idx >= page_count:  # len(purls) >= page_count:
-                downloaded_count = Zipper.count_dir(param['chapter_dir'])
+                downloaded_count = Zipper.count_dir(chapter_dir)
 
                 if downloaded_count >= page_count:
                     break
@@ -288,17 +288,19 @@ class ManhuaguiPaser(Parser):
                     cur_idx = 1
                     await page.goto(url, wait_until='networkidle', timeout=100000)
 
-        downloaded_count = Zipper.count_dir(param['chapter_dir'])
+        downloaded_count = Zipper.count_dir(chapter_dir)
         if downloaded_count == page_count:
 
-            Zipper.zip(param['chapter_dir'])
+            # print(len(self.pices_data))
+
+            Zipper.zip(chapter_dir)
             Comic.chapters[md5(url)]['status'] = 1
             Comic.save_to_json()
 
-    def set_purls(self, param, doc, cur_idx, purls):
+    def set_purls(self, param, doc, cur_idx, purls, chapter_dir):
         purl = doc('#mangaFile').attr('src')
         purl = urllib.parse.quote(purl, safe="[];/?:@&=+$,%")
-        purls[md5(purl)] = os.path.join(param['chapter_dir'], f'{str(cur_idx).zfill(4)}.{extrat_extname(purl)}')
+        purls[md5(purl)] = os.path.join(chapter_dir, f'{str(cur_idx).zfill(4)}.{extrat_extname(purl)}')
 
     def get_page_num(self, doc):
         count_info = doc('body > div.w980.title > div:nth-child(2) > span').text()
