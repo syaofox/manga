@@ -16,6 +16,9 @@ from mods.picchecker import PicChecker
 
 class ManhuaguiPaser(Parser):
 
+    pices_data = {}
+    cover_imgdatas = {}
+
     @property
     def name(self):
         return 'manhuagui'
@@ -38,14 +41,14 @@ class ManhuaguiPaser(Parser):
         return name, author, intro, cover_url
 
     async def parse_main_page(self, browser: BrowserContext, page: Page, url, param=None):
-        param['cover_imgdatas'] = {}
+        self.cover_imgdatas = {}
 
         async def handle_response(response: Response):
 
             if response.ok and (response.request.resource_type == "image"):
                 await response.finished()
                 imgdata = await response.body()
-                param['cover_imgdatas'][md5(response.url)] = imgdata
+                self.cover_imgdatas[md5(response.url)] = imgdata
 
         page.on("response", handle_response)
         await page.goto(url, wait_until='domcontentloaded', timeout=100000)
@@ -65,7 +68,7 @@ class ManhuaguiPaser(Parser):
 
         if cover_url:
             keystr = md5(cover_url)
-            imgdata = param['cover_imgdatas'].get(keystr, None)
+            imgdata = self.cover_imgdatas.get(keystr, None)
 
             if not imgdata:
                 Logouter.red(f'漏网{cover_url}')
@@ -191,7 +194,9 @@ class ManhuaguiPaser(Parser):
             os.makedirs(chapter_dir)
 
         param['pices_count'] = 0
-        param['pices_datas'] = {}
+        # param['pices_datas'] = {}
+
+        self.pices_data = {}
 
         async def handle_response(response: Response):
 
@@ -201,7 +206,7 @@ class ManhuaguiPaser(Parser):
                     # 保存页面上的图像数据
                     await response.finished()
                     imgdata = await response.body()
-                    param['pices_datas'][md5(response.url)] = imgdata
+                    self.pices_data[md5(response.url)] = imgdata
 
         page.on("response", handle_response)
         await page.goto(url, wait_until='networkidle', timeout=100000)
@@ -239,13 +244,13 @@ class ManhuaguiPaser(Parser):
 
             for urlmd5, pic_fname in purls.copy().items():
 
-                imgdata = param['pices_datas'].get(urlmd5, None)
+                imgdata = self.pices_data.get(urlmd5, None)
                 if not imgdata:
                     continue
 
                 if os.path.exists(pic_fname):
                     if PicChecker.valid_pic(pic_fname):
-                        param['pices_datas'].pop(urlmd5)
+                        self.pices_data.pop(urlmd5)
                         purls.pop(urlmd5)
                         Logouter.pic_crawed += 1
                         Logouter.crawlog()
@@ -261,14 +266,14 @@ class ManhuaguiPaser(Parser):
                     Logouter.pic_failed += 1
                     Logouter.crawlog()
 
-                    param['pices_datas'].pop(urlmd5)
+                    self.pices_data.pop(urlmd5)
                     purls.pop(urlmd5)
 
                     Logouter.red(f'\n下载失败！下载图片不完整={pic_fname}')
                     continue
                     # raise Exception(f'下载失败！下载图片不完整={pic_fname}')
 
-                param['pices_datas'].pop(urlmd5)
+                self.pices_data.pop(urlmd5)
                 purls.pop(urlmd5)
 
                 Logouter.pic_crawed += 1
