@@ -10,6 +10,7 @@ from parsers.comic18_parser import Comic18Paser
 from parsers.comic18ex_parser import Comic18exParser
 from parsers.klmag_parser import KlmagPaser
 from parsers.manhuagui_parser import ManhuaguiPaser
+from spiders.baozimh_spider import BaozimhSpider
 from spiders.comic18_spider import Comic18Spider
 from spiders.klmag_spider import KlmagSpider
 from spiders.manhuagui_spider import ManhuaguiSpider
@@ -47,26 +48,15 @@ def start_craw(start_url, headless=False, szip=False):
     config = Config(comic_url, maindir, comic_dir_name, chapters, ccount=1, headless=headless)
 
     if ('manhuagui' in comic_url) or ('mhgui' in comic_url):
-
         spider = ManhuaguiSpider(config=config)
     elif '18comic' in comic_url:
-
         spider = Comic18Spider(config=config)
-
     elif ('klmag' in comic_url) or ('klmanga' in comic_url):
-
         spider = KlmagSpider(config=config)
+    elif 'baozimh' in comic_url:
+        spider = BaozimhSpider(config=config)
 
     spider.run()
-
-    # elif 'baozimh' in comic_url:
-
-    #     parser = BaozimhexParser()
-    #     config = Config(comic_url, maindir, comic_dir_name, chapters, ccount=1, headless=headless)
-
-    # if parser == None: return
-
-    # Comic.parser_name = parser.name
 
 
 if __name__ == "__main__":
