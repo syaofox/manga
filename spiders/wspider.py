@@ -2,6 +2,7 @@ import asyncio
 import os
 import re
 import urllib
+from loguru import logger
 from playwright.async_api import Error, async_playwright, BrowserContext, Response, Page
 import lzstring
 from mods.classes import Config
@@ -45,40 +46,37 @@ class WSpider:
             page = await self.browser.new_page()
         return page
 
-    def save_image(self, pic_url, cover_fname):
-        if pic_url:
-            urlmd5 = md5(pic_url)
-            imgdata = self.pices_data.get(urlmd5, None)
+    def save_image(self, urlmd5, pic_name):
 
-            if not imgdata:
-                return
+        imgdata = self.pices_data.get(urlmd5, None)
 
-            # cover_fname = os.path.join(Comic.get_full_comicdir(), f'{fname}.{extrat_extname(pic_url)}')
+        if not imgdata:
+            return False
 
-            if os.path.exists(cover_fname):
-                if PicChecker.valid_pic(cover_fname):
-                    self.pices_data.pop(urlmd5)
-                    Logouter.pic_crawed += 1
-                    Logouter.crawlog()
-                    return
-                else:
-                    os.remove(cover_fname)
+        if os.path.exists(pic_name):
+            if PicChecker.valid_pic(pic_name):
+                return True
+            else:
+                os.remove(pic_name)
 
-            with open(cover_fname, 'wb') as f:
-                f.write(imgdata)
+        with open(pic_name, 'wb') as f:
+            f.write(imgdata)
 
-            if not PicChecker.valid_pic(cover_fname):
-                os.remove(cover_fname)
-                raise Exception(f'下载失败！下载图片不完整={cover_fname}')
+        if not PicChecker.valid_pic(pic_name):
+            os.remove(pic_name)
+            raise Exception(f'下载失败！下载图片不完整={pic_name}')
 
-            Logouter.pic_crawed += 1
-            Logouter.crawlog()
+            # Logouter.red(f'下载失败！下载图片不完整={pic_name}')
+            # return False
 
-    def save_base_info(self, jsononly=False):
+        return True
+
+    def save_base_info(self):
         if not self.config.comic_dir_name:
             self.config.comic_dir_name = valid_filename(f'[{self.author}]{self.comic_name}' if self.author else self.comic_name)
 
         # self.full_comic_path = os.path.join(self.config.maindir, self.config.comic_dir_name)
+
         if not os.path.exists(self.full_comic_path):
             os.makedirs(self.full_comic_path)
 
@@ -95,10 +93,6 @@ class WSpider:
         with open(fjson, 'w', encoding='utf-8') as f:
             json.dump(data, f, indent=4, ensure_ascii=False)
 
-        if not jsononly:
-            cover_fname = os.path.join(self.full_comic_path, f'cover.{extrat_extname(self.cover_url)}')
-            self.save_image(self.cover_url, cover_fname)
-
     def run(self):
         Logouter.blue(f'开始爬取任务,引擎:{self.parser.name}')
         loop = asyncio.get_event_loop()
@@ -112,16 +106,26 @@ class WSpider:
 
             # 首页爬取章节
             try:
+                # 检测是否登录
                 if self.config.checklogin:
                     await self.login()
 
+                # 爬取基本信息和章节
                 page = await self.fetch_comic_info()
                 await self.fetch_chapters(page)
 
+                #保存基本信息
                 self.save_base_info()
 
-                async_tasks = []
+                #下载封面
+                cover_fname = os.path.join(self.full_comic_path, f'cover.{extrat_extname(self.cover_url)}')
+                self.save_image(md5(self.cover_url), cover_fname)
 
+                # 设置日志
+                Logouter.comic_name = self.config.comic_dir_name
+
+                # 爬取各个章节
+                async_tasks = []
                 for _, chapter in self.chapters.items():
                     async_task = asyncio.create_task(self.fetch_pices(chapter))
                     async_tasks.append(async_task)
@@ -139,7 +143,6 @@ class WSpider:
         try:
 
             async def handle_response(response: Response):
-
                 if response.ok and (response.request.resource_type == "image"):
                     await response.finished()
                     imgdata = await response.body()
@@ -163,15 +166,12 @@ class WSpider:
 
         except Exception as e:
             Logouter.yellow(e)
-
             nretry = retry
             nretry += 1
             if nretry <= 5:
-
                 Logouter.yellow(f'页面{page.url}打开错误,重试={nretry}')
                 await asyncio.sleep(5)
                 await self.fetch_comic_info(retry=nretry)
-
             else:
                 Logouter.red(e)
                 Logouter.pic_failed += 1
@@ -214,7 +214,6 @@ class WSpider:
                 # 爬取每个章节图片
                 categories_str = valid_filename(f'{chapter["categories"]}')
                 chapter_str = valid_filename(f'{chapter["title"]}')
-
                 chapter_dir = os.path.join(self.full_comic_path, categories_str, chapter_str)
                 test_zip_file = f'{chapter_dir}.zip'
 
@@ -227,35 +226,27 @@ class WSpider:
                     return
 
                 chapter_dir = os.path.join(self.full_comic_path, valid_filename(f'{chapter["categories"]}'), valid_filename(f'{chapter["title"]}'))
-
                 if not os.path.exists(chapter_dir):
                     os.makedirs(chapter_dir)
 
                 async def handle_response(response: Response):
-
                     if response.ok:
                         if (response.request.resource_type == "image"):
-
                             # 保存页面上的图像数据
                             await response.finished()
                             imgdata = await response.body()
                             self.pices_data[md5(response.url)] = imgdata
 
                 page = await self.get_page()
-
                 page.on("response", handle_response)
-
                 purls = {}
                 cur_idx = -1
 
                 while True:
-
                     if cur_idx < 0:
                         await page.goto(chapter['url'], wait_until='networkidle', timeout=100000)
                     else:
                         await page.locator('#next').click()
-
-                    # await page.wait_for_load_state("networkidle")
                     # 等待图片加载完成
                     await page.wait_for_selector('#imgLoading', state='hidden')
 
@@ -271,45 +262,14 @@ class WSpider:
                     purls[md5(purl)] = os.path.join(chapter_dir, f'{str(cur_idx).zfill(4)}.{extrat_extname(purl)}')
 
                     for urlmd5, pic_fname in purls.copy().items():
-
-                        imgdata = self.pices_data.get(urlmd5, None)
-                        if not imgdata:
-                            continue
-
-                        if os.path.exists(pic_fname):
-                            if PicChecker.valid_pic(pic_fname):
-                                self.pices_data.pop(urlmd5)
-                                purls.pop(urlmd5)
-                                Logouter.pic_crawed += 1
-                                Logouter.crawlog()
-                                continue
-                            else:
-                                os.remove(pic_fname)
-
-                        with open(pic_fname, 'wb') as f:
-                            f.write(imgdata)
-
-                        if not PicChecker.valid_pic(pic_fname):
-                            os.remove(pic_fname)
-                            Logouter.pic_failed += 1
+                        if self.save_image(urlmd5, pic_fname):
+                            Logouter.pic_crawed += 1
                             Logouter.crawlog()
-
                             self.pices_data.pop(urlmd5)
                             purls.pop(urlmd5)
 
-                            Logouter.red(f'\n下载失败！下载图片不完整={pic_fname}')
-                            continue
-                            # raise Exception(f'下载失败！下载图片不完整={pic_fname}')
-
-                        self.pices_data.pop(urlmd5)
-                        purls.pop(urlmd5)
-
-                        Logouter.pic_crawed += 1
-                        Logouter.crawlog()
-
                     if cur_idx >= page_count:  # len(purls) >= page_count:
                         downloaded_count = Zipper.count_dir(chapter_dir)
-
                         if downloaded_count >= page_count:
                             break
                         else:
@@ -318,53 +278,20 @@ class WSpider:
 
                 downloaded_count = Zipper.count_dir(chapter_dir)
                 if downloaded_count == page_count:
-
-                    # print(len(self.pices_data))
-
                     Zipper.zip(chapter_dir)
                     self.chapters[md5(chapter['url'])]['status'] = 1
-                    self.save_base_info(jsononly=True)
+                    self.save_base_info()
 
         except Exception as e:
             Logouter.yellow(e)
-
             nretry = retry
             nretry += 1
             if nretry <= 5:
-
                 Logouter.yellow(f'页面{chapter["url"]}打开错误,重试={nretry}')
                 await asyncio.sleep(5)
                 await self.fetch_pices(chapter, retry=nretry)
-
             else:
                 Logouter.red(e)
                 Logouter.pic_failed += 1
                 Logouter.crawlog()
                 Logouter.red(f'页面{chapter["url"]}打开错误,重试超过最大次数')
-
-    # async def fetch_page(self, url, browser: BrowserContext, parse_method, retry=0, param=None):
-
-    #     pages = len(browser.pages)
-
-    #     if pages > 0:
-    #         page = browser.pages[0]
-    #     else:
-    #         page = await browser.new_page()
-
-    #     try:
-    #         await parse_method(browser, page, url, param)
-
-    #     except (Error, AttributeError) as e:
-
-    #         nretry = retry
-    #         nretry += 1
-    #         if nretry <= 5:
-    #             Logouter.yellow(f'页面{url}打开错误,重试={nretry}')
-    #             await asyncio.sleep(5)
-    #             await self.fetch_page(url, browser=browser, parse_method=parse_method, retry=nretry, param=param)
-    #         else:
-    #             Logouter.red(e.message)
-    #             Logouter.red(f'页面{url}打开错误,重试超过最大次数')
-
-    # finally:
-    #     await page.close()
