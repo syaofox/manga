@@ -192,6 +192,8 @@ class Comic18Spider(WSpider):
         Logouter.crawlog()
 
         html = await page.content()
+
+        # 读取图片加密信息
         is_need_fix = False
         ids = re.search(r'<script>.*?var.*?scramble_id.*?=.*?(\d+);.*?var.*?aid.*?=.*?(\d+);', html, re.S)
         aid = 0
@@ -201,7 +203,6 @@ class Comic18Spider(WSpider):
             is_need_fix = (aid >= scramble_id)
 
         purls = {}
-
         for i, el in enumerate(els):
             purl = await el.get_attribute('data-original')
             pic_fname = os.path.join(chapter_dir, f'{str(i).zfill(4)}.{extrat_extname(purl)}')
@@ -218,8 +219,8 @@ class Comic18Spider(WSpider):
                 pic_fname = pic_data['fname']
                 pic_url = pic_data['url']
 
+                # 获取加密参数
                 fixparm = 0
-
                 if 'media/photos' in pic_url and is_need_fix:  # 对非漫画图片连接直接放行
                     fixparm = self.get_rows(aid, pic_url)
 
@@ -230,33 +231,6 @@ class Comic18Spider(WSpider):
                     if self.pices_data.get(urlmd5, None):
                         self.pices_data.pop(urlmd5)
                     purls.pop(urlmd5)
-
-                # fixparm = 0
-
-                # if 'media/photos' in pic_url and is_need_fix:  # 对非漫画图片连接直接放行
-                #     fixparm = self.get_rows(aid, pic_url)
-
-                # file_data = imgdata
-                # if fixparm > 0:
-                #     file_data = self.fix_jpgdata(imgdata, fixparm)
-                #     file_data.save(pic_fname)
-
-                # else:
-                #     with open(pic_fname, 'wb') as f:
-                #         f.write(file_data)
-
-                # if not PicChecker.valid_pic(pic_fname):
-                #     os.remove(pic_fname)
-                #     Logouter.pic_failed += 1
-                #     Logouter.crawlog()
-                #     raise Exception(f'下载失败！下载图片不完整={pic_fname}')
-
-                # Logouter.pic_crawed += 1
-                # downloaded += 1
-                # Logouter.crawlog()
-
-                # param['pices_datas'].pop(urlmd5)
-                # purls.pop(urlmd5)
 
             if downloaded == page_count:
                 break
