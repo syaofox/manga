@@ -1,6 +1,6 @@
 class Config:
 
-    def __init__(self, parser_name, ccount=1, headless=False, checklogin=False) -> None:
+    def __init__(self, comic_url, maindir, comic_dir_name, chapters, ccount=1, headless=False, checklogin=False) -> None:
         """_summary_
 
         Args:
@@ -12,8 +12,11 @@ class Config:
             fzip (bool, optional): 强制压缩. Defaults to False.           
         """
 
-        self.parser_name = parser_name
         self.ccount = ccount
 
         self.headless = headless
         self.checklogin = checklogin
+        self.comic_url = comic_url
+        self.maindir = maindir
+        self.comic_dir_name = comic_dir_name
+        self.chapters = chapters
