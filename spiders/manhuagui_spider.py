@@ -47,7 +47,7 @@ class ManhuaguiSpider(WSpider):
 
         for i, chapter_div in enumerate(chapter_divs.items()):
             els = chapter_div('li>a')
-            categories = heads[i]
+            categories = heads[i] if heads else ''
 
             for el in els.items():
                 url = urllib.parse.urljoin(page.url, el.attr('href'))
@@ -57,6 +57,9 @@ class ManhuaguiSpider(WSpider):
                 if not chapterdata:
                     title = f"{el.attr('title')}({el('span>i').text()})"
                     self.chapters[keystr] = {'categories': categories, 'title': title, 'url': url, 'status': 0}
+
+        Logouter.chapter_total = len(self.chapters)
+        Logouter.crawlog()
 
     async def fetch_pices_sub(self, chapter):
         categories_str = valid_filename(f'{chapter["categories"]}')
@@ -104,6 +107,11 @@ class ManhuaguiSpider(WSpider):
             idxs = re.search(r'\((\d+)/(\d+)\)', count_info)
             cur_idx = int(idxs.group(1))
             page_count = int(idxs.group(2))
+
+            if cur_idx == 1:
+                Logouter.pic_total += page_count
+                Logouter.crawlog()
+
             purl = doc('#mangaFile').attr('src')
             purl = urllib.parse.quote(purl, safe="[];/?:@&=+$,%")
             purls[md5(purl)] = os.path.join(chapter_dir, f'{str(cur_idx).zfill(4)}.{extrat_extname(purl)}')
@@ -127,4 +135,6 @@ class ManhuaguiSpider(WSpider):
         if downloaded_count == page_count:
             Zipper.zip(chapter_dir)
             self.chapters[md5(chapter['url'])]['status'] = 1
+            Logouter.chapter_successed += 1
+            Logouter.crawlog()
             self.save_base_info()
