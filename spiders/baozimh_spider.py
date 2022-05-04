@@ -2,7 +2,6 @@ import asyncio
 import os
 import urllib
 
-from playwright.async_api import Response
 from mods.logouter import Logouter
 from mods.utils import extrat_extname, md5
 from pyquery import PyQuery as pq
@@ -49,17 +48,8 @@ class BaozimhSpider(Spider):
 
     async def fetch_pices_sub(self, chapter, chapter_dir):
 
-        async def handle_response(response: Response):
-
-            if response.ok:
-                if (response.request.resource_type == "image"):
-                    # 保存页面上的图像数据
-                    await response.finished()
-                    imgdata = await response.body()
-                    self.pices_data[md5(response.url)] = imgdata
-
         page = await self.get_page()
-        page.on("response", handle_response)
+
         await page.goto(chapter['url'], wait_until='networkidle', timeout=100000)
 
         html = await page.content()

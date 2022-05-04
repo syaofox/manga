@@ -1,8 +1,6 @@
 import os
-import re
-import urllib
-import lzstring
 
+from playwright.async_api import Page
 from mods.logouter import Logouter
 from mods.utils import extrat_extname, md5
 from pyquery import PyQuery as pq
@@ -10,24 +8,25 @@ from mods.zipper import Zipper
 from spiders.spider import Spider
 
 
-class ManhuaguiSpider(Spider):
+class SenmangaSpider(Spider):
 
     @property
     def name(self):
-        return 'manhuagui'
+        return 'senmanga'
 
-    async def fetch_comic_info_sub(self, page):
+    async def fetch_comic_info_sub(self, page: Page):
         await page.goto(self.config.comic_url, wait_until='networkidle', timeout=100000)
+        await page.wait_for_selector('div.series-desc > div.desc > h1.series')
 
         html = await page.content()
         doc = pq(html)
 
-        self.comic_name = doc('div.book-title>h1').text()
+        self.comic_name = doc('div.series-desc > div.desc > h1.series').text()
         if self.comic_name is None:
             raise Exception('获取漫画名字失败')
-        self.author = doc('div.book-detail.pr.fr > ul> li:nth-child(2)>span:nth-child(2)> a').text()
-        self.intro = doc('#intro-cut').text()
-        self.cover_url = urllib.parse.urljoin(page.url, doc('p.hcover > img').attr('src'))
+        self.author = doc('div.series-desc > div.desc > div.info > div:nth-child(3) > a').text()
+        self.intro = doc('div.series-desc > div.desc > div.alt-name').text()
+        self.cover_url = doc('div.series-desc > div.thumbook > div.cover > img').attr('src')
 
     async def fetch_chapters(self, page):
         await super().fetch_chapters(page)
@@ -35,29 +34,15 @@ class ManhuaguiSpider(Spider):
         html = await page.content()
         doc = pq(html)
 
-        if await page.query_selector('#__VIEWSTATE'):
-            lzstrings = doc('#__VIEWSTATE').attr('value')
-            deslzstring = lzstring.LZString().decompressFromBase64(lzstrings)
-            doc = pq(deslzstring)
-            chapter_divs = doc('div.chapter-list')
-            heads = [el.text() for el in doc('h4').items()]
-        else:
-            await page.wait_for_selector('div.chapter>div.chapter-list')
-            chapter_divs = doc('div.chapter>div.chapter-list')
-            heads = [el.text() for el in doc('body > div.w998.bc.cf> div.fl.w728 > div.chapter.cf.mt16 > h4').items()]
+        for el in doc('ul.chapter-list > li > a').items():
+            categories = '连载'
+            url = el.attr('href')
+            keystr = md5(url)
 
-        for i, chapter_div in enumerate(chapter_divs.items()):
-            els = chapter_div('li>a')
-            categories = heads[i] if heads else ''
-
-            for el in els.items():
-                url = urllib.parse.urljoin(page.url, el.attr('href'))
-                keystr = md5(url)
-
-                chapterdata = self.chapters.get(keystr, None)
-                if not chapterdata:
-                    title = f"{el.attr('title')}({el('span>i').text()})"
-                    self.chapters[keystr] = {'categories': categories, 'title': title, 'url': url, 'status': 0}
+            chapterdata = self.chapters.get(keystr, None)
+            if not chapterdata:
+                title = el.text()
+                self.chapters[keystr] = {'categories': categories, 'title': title, 'url': url, 'status': 0}
 
         Logouter.chapter_total = len(self.chapters)
         Logouter.crawlog()
@@ -73,24 +58,28 @@ class ManhuaguiSpider(Spider):
             if cur_idx < 0:
                 await page.goto(chapter['url'], wait_until='networkidle', timeout=100000)
             else:
-                await page.locator('#next').click()
+                # await page.locator('text=Next Page').click()
+                await page.keyboard.press('ArrowRight')
                 # 等待图片加载完成
-            await page.wait_for_selector('#imgLoading', state='hidden')
+
+            await page.wait_for_selector('body > div.reader.text-center > a > img')
 
             html = await page.content()
             doc = pq(html)
 
-            count_info = doc('body > div.w980.title > div:nth-child(2) > span').text()
-            idxs = re.search(r'\((\d+)/(\d+)\)', count_info)
-            cur_idx = int(idxs.group(1))
-            page_count = int(idxs.group(2))
+            page_els = doc('select[name="page"]')
+            for page_el in page_els.items():
+
+                cur_idx = int(page_el('option[selected]').text())
+                page_count = len(page_el('option'))
+                break
 
             if cur_idx == 1:
                 Logouter.pic_total += page_count
                 Logouter.crawlog()
 
-            purl = doc('#mangaFile').attr('src')
-            purl = urllib.parse.quote(purl, safe="[];/?:@&=+$,%")
+            purl = doc('body > div.reader.text-center > a > img').attr('src')
+
             purls[md5(purl)] = os.path.join(chapter_dir, f'{str(cur_idx).zfill(4)}.{extrat_extname(purl)}')
 
             for urlmd5, pic_fname in purls.copy().items():

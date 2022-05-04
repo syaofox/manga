@@ -9,6 +9,7 @@ from spiders.baozimh_spider import BaozimhSpider
 from spiders.comic18_spider import Comic18Spider
 from spiders.klmag_spider import KlmagSpider
 from spiders.manhuagui_spider import ManhuaguiSpider
+from spiders.senmanga_spider import SenmangaSpider
 
 
 def parse_start_url(start_url):
@@ -46,6 +47,8 @@ def start_craw(start_url, headless=False, szip=False):
         spider = KlmagSpider(config=config)
     elif 'baozimh' in comic_url:
         spider = BaozimhSpider(config=config)
+    elif 'senmanga' in comic_url:
+        spider = SenmangaSpider(config=config)
 
     spider.run()
 

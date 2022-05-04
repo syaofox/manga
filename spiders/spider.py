@@ -132,17 +132,21 @@ class Spider:
     async def login(self):
         pass
 
+    async def handle_response(self, response: Response):
+        if response.ok and response.status == 200 and (response.request.resource_type == "image"):
+
+            try:
+                # await response.finished()
+                imgdata = await response.body()
+                self.pices_data[md5(response.url)] = imgdata
+            except Exception as e:
+                Logouter.red(f'response error{e}={response}')
+
     async def fetch_comic_info(self, retry=0):
         try:
 
-            async def handle_response(response: Response):
-                if response.ok and (response.request.resource_type == "image"):
-                    await response.finished()
-                    imgdata = await response.body()
-                    self.pices_data[md5(response.url)] = imgdata
-
             page = await self.get_page()
-            page.on("response", handle_response)
+            page.on("response", self.handle_response)
             await self.fetch_comic_info_sub(page)
 
             return page
