@@ -10,6 +10,7 @@ from parsers.comic18_parser import Comic18Paser
 from parsers.comic18ex_parser import Comic18exParser
 from parsers.klmag_parser import KlmagPaser
 from parsers.manhuagui_parser import ManhuaguiPaser
+from spiders.manhuagui_spider import ManhuaguiSpider
 from spiders.spider import Spider
 from spiders.wspider import WSpider
 import json
@@ -43,30 +44,31 @@ def start_craw(start_url, headless=False, szip=False):
 
     if ('manhuagui' in comic_url) or ('mhgui' in comic_url):
 
-        parser = ManhuaguiPaser()
+        # parser = ManhuaguiPaser()
 
         config = Config(comic_url, maindir, comic_dir_name, chapters, ccount=1, headless=headless)
+        spider = ManhuaguiSpider(config=config)
 
-    elif ('klmag' in comic_url) or ('klmanga' in comic_url):
-
-        parser = KlmagPaser()
-        config = Config(comic_url, maindir, comic_dir_name, chapters, ccount=2, headless=headless)
-
-    elif '18comic' in comic_url:
-
-        parser = Comic18Paser()
-        config = Config(comic_url, maindir, comic_dir_name, chapters, ccount=1, headless=headless)
-
-    elif 'baozimh' in comic_url:
-
-        parser = BaozimhexParser()
-        config = Config(comic_url, maindir, comic_dir_name, chapters, ccount=1, headless=headless)
-
-    if parser == None: return
-
-    Comic.parser_name = parser.name
-    spider = WSpider(config=config, parser=parser)
     spider.run()
+
+    # elif ('klmag' in comic_url) or ('klmanga' in comic_url):
+
+    #     parser = KlmagPaser()
+    #     config = Config(comic_url, maindir, comic_dir_name, chapters, ccount=2, headless=headless)
+
+    # elif '18comic' in comic_url:
+
+    #     parser = Comic18Paser()
+    #     config = Config(comic_url, maindir, comic_dir_name, chapters, ccount=1, headless=headless)
+
+    # elif 'baozimh' in comic_url:
+
+    #     parser = BaozimhexParser()
+    #     config = Config(comic_url, maindir, comic_dir_name, chapters, ccount=1, headless=headless)
+
+    # if parser == None: return
+
+    # Comic.parser_name = parser.name
 
 
 if __name__ == "__main__":
