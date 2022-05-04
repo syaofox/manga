@@ -27,9 +27,7 @@ class KlmagSpider(WSpider):
         if self.comic_name is None:
             raise Exception('获取漫画名字失败')
         self.author = ''
-        self.intro =  '[' + doc('ul.manga-info > li:nth-child(3)').text()\
-            + ']' +doc('h3:contains("Description")').siblings('p').text()
-
+        self.intro = '[' + doc('ul.manga-info > li:nth-child(3)').text() + ']' + doc('h3:contains("Description")').siblings('p').text()
         self.cover_url = doc('div.col-md-4 > div.well.info-cover > img.thumbnail').attr('src')
 
     async def fetch_chapters(self, page):
