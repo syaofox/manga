@@ -62,23 +62,7 @@ class ManhuaguiSpider(WSpider):
         Logouter.chapter_total = len(self.chapters)
         Logouter.crawlog()
 
-    async def fetch_pices_sub(self, chapter):
-        categories_str = valid_filename(f'{chapter["categories"]}')
-        chapter_str = valid_filename(f'{chapter["title"]}')
-        chapter_dir = os.path.join(self.full_comic_path, categories_str, chapter_str)
-        test_zip_file = f'{chapter_dir}.zip'
-
-        if os.path.exists(test_zip_file):
-            chapter['status'] = 1
-
-        if chapter['status'] == 1:
-            Logouter.chapter_successed += 1
-            Logouter.crawlog()
-            return
-
-        chapter_dir = os.path.join(self.full_comic_path, valid_filename(f'{chapter["categories"]}'), valid_filename(f'{chapter["title"]}'))
-        if not os.path.exists(chapter_dir):
-            os.makedirs(chapter_dir)
+    async def fetch_pices_sub(self, chapter, chapter_dir):
 
         async def handle_response(response: Response):
             if response.ok:

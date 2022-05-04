@@ -176,7 +176,25 @@ class WSpider:
         try:
             async with self.semaphore_crawl:
                 # 爬取每个章节图片
-                return await self.fetch_pices_sub(chapter)
+                categories_str = valid_filename(f'{chapter["categories"]}')
+                chapter_str = valid_filename(f'{chapter["title"]}')
+                chapter_dir = os.path.join(self.full_comic_path, categories_str, chapter_str)
+                test_zip_file = f'{chapter_dir}.zip'
+
+                if chapter['status'] == 1:
+                    Logouter.chapter_successed += 1
+                    Logouter.crawlog()
+                    return
+
+                if os.path.exists(test_zip_file):
+                    chapter['status'] = 1
+                    return
+
+                chapter_dir = os.path.join(self.full_comic_path, valid_filename(f'{chapter["categories"]}'), valid_filename(f'{chapter["title"]}'))
+                if not os.path.exists(chapter_dir):
+                    os.makedirs(chapter_dir)
+
+                return await self.fetch_pices_sub(chapter, chapter_dir)
 
         except Exception as e:
             Logouter.yellow(e)
