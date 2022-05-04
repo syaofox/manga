@@ -30,6 +30,7 @@ class ManhuaguiSpider(WSpider):
         self.cover_url = urllib.parse.urljoin(page.url, doc('p.hcover > img').attr('src'))
 
     async def fetch_chapters(self, page):
+        await super().fetch_chapters(page)
 
         html = await page.content()
         doc = pq(html)
@@ -120,7 +121,8 @@ class ManhuaguiSpider(WSpider):
                 if self.save_image(urlmd5, pic_fname):
                     Logouter.pic_crawed += 1
                     Logouter.crawlog()
-                    self.pices_data.pop(urlmd5)
+                    if self.pices_data.get(urlmd5, None):
+                        self.pices_data.pop(urlmd5)
                     purls.pop(urlmd5)
 
             if cur_idx >= page_count:  # len(purls) >= page_count:

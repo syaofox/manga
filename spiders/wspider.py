@@ -169,7 +169,7 @@ class WSpider:
         pass
 
     async def fetch_chapters(self, page):
-        pass
+        self.chapters = self.config.chapters
 
     async def fetch_pices(self, chapter, retry=0):
 
