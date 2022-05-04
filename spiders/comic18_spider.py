@@ -1,20 +1,20 @@
 import os
 import re
 import urllib
-import lzstring
 import math
+
 from playwright.async_api import Response, Page
 from mods.logouter import Logouter
 from mods.picchecker import PicChecker
-from mods.utils import extrat_extname, md5, valid_filename
+from mods.utils import extrat_extname, md5
 from pyquery import PyQuery as pq
 from mods.zipper import Zipper
-from spiders.wspider import WSpider
+from spiders.spider import Spider
 from PIL import Image
 from io import BytesIO
 
 
-class Comic18Spider(WSpider):
+class Comic18Spider(Spider):
 
     @property
     def name(self):

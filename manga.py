@@ -1,23 +1,14 @@
 import fire
-from mods.classes import Config
+import json
+import os
 
-from mods.datamgr import Comic
+from mods.classes import Config
 from mods.logouter import Logouter
 from mods.settings import DOWNLOADS_DIR
-from parsers.baozimh_parser import BaozimhParser
-from parsers.baozimhex_parser import BaozimhexParser
-from parsers.comic18_parser import Comic18Paser
-from parsers.comic18ex_parser import Comic18exParser
-from parsers.klmag_parser import KlmagPaser
-from parsers.manhuagui_parser import ManhuaguiPaser
 from spiders.baozimh_spider import BaozimhSpider
 from spiders.comic18_spider import Comic18Spider
 from spiders.klmag_spider import KlmagSpider
 from spiders.manhuagui_spider import ManhuaguiSpider
-from spiders.spider import Spider
-from spiders.wspider import WSpider
-import json
-import os
 
 
 def parse_start_url(start_url):

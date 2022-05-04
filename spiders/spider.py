@@ -1,118 +1,210 @@
 import asyncio
 import os
-from playwright.async_api import Error, async_playwright, BrowserContext, Response
+import json
 
+from playwright.async_api import async_playwright, BrowserContext, Response
 from mods.classes import Config
-from mods.datamgr import Comic
 from mods.logouter import Logouter
+from mods.picchecker import PicChecker
 from mods.settings import CHROMIUM_USER_DATA_DIR
-from mods.utils import valid_filename
+from mods.utils import extrat_extname, md5, valid_filename
 
 
 class Spider:
 
-    def __init__(self, config, parser) -> None:
+    def __init__(self, config) -> None:
         self.config: Config = config
-        self.parser = parser
         self.semaphore_crawl = asyncio.Semaphore(self.config.ccount)
+        self.browser: BrowserContext = None
+        self.pices_data = {}
+        self.cover_imgdatas = {}
+
+        self.comic_name = ''
+        self.author = ''
+        self.intro = ''
+        self.cover_url = ''
+        self.chapters = {}
+
+    @property
+    def name(self):
+        return 'spider'
+
+    @property
+    def full_comic_path(self):
+        return os.path.join(self.config.maindir, self.config.comic_dir_name)
+
+    async def get_page(self):
+        pages = len(self.browser.pages)
+
+        if pages > 0:
+            page = self.browser.pages[0]
+        else:
+            page = await self.browser.new_page()
+        return page
+
+    def save_image(self, urlmd5, pic_name):
+
+        if os.path.exists(pic_name):
+            if PicChecker.valid_pic(pic_name):
+                return True
+            else:
+                os.remove(pic_name)
+
+        imgdata = self.pices_data.get(urlmd5, None)
+
+        if not imgdata:
+            return False
+
+        with open(pic_name, 'wb') as f:
+            f.write(imgdata)
+
+        if not PicChecker.valid_pic(pic_name):
+            os.remove(pic_name)
+            raise Exception(f'下载失败！下载图片不完整={pic_name}')
+
+        return True
+
+    def save_base_info(self):
+        if not self.config.comic_dir_name:
+            self.config.comic_dir_name = valid_filename(f'[{self.author}]{self.comic_name}' if self.author else self.comic_name)
+
+        # self.full_comic_path = os.path.join(self.config.maindir, self.config.comic_dir_name)
+
+        if not os.path.exists(self.full_comic_path):
+            os.makedirs(self.full_comic_path)
+
+        fjson = os.path.join(self.full_comic_path, f'{self.name}.json')
+
+        data = {
+            'comic': self.comic_name,
+            'url': self.config.comic_url,
+            'author': self.author,
+            'intro': self.intro,
+            'chapters': self.chapters,
+        }
+
+        with open(fjson, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=4, ensure_ascii=False)
 
     def run(self):
-        Logouter.blue(f'开始爬取任务,引擎:{self.parser.name}')
+        Logouter.blue(f'开始爬取任务,引擎:{self.name}')
         loop = asyncio.get_event_loop()
         loop.run_until_complete(self.start_crawl_task())
         Logouter.blue('信息爬取完成!')
 
-    async def parse_chapters(self, chapter, context, retry=0):
+    async def start_crawl_task(self):
+
+        async with async_playwright() as p:
+            self.browser = await p.chromium.launch_persistent_context(user_data_dir=CHROMIUM_USER_DATA_DIR, headless=self.config.headless, accept_downloads=True, args=['--disable-blink-features=AutomationControlled'])
+
+            # 首页爬取章节
+            try:
+                # 检测是否登录
+                if self.config.checklogin:
+                    await self.login()
+
+                # 爬取基本信息和章节
+                page = await self.fetch_comic_info()
+                await self.fetch_chapters(page)
+
+                #保存基本信息
+                self.save_base_info()
+
+                #下载封面
+                cover_fname = os.path.join(self.full_comic_path, f'cover.{extrat_extname(self.cover_url)}')
+                self.save_image(md5(self.cover_url), cover_fname)
+
+                # 设置日志
+                Logouter.comic_name = self.config.comic_dir_name
+
+                # 爬取各个章节
+                async_tasks = []
+                for _, chapter in self.chapters.items():
+                    async_task = asyncio.create_task(self.fetch_pices(chapter))
+                    async_tasks.append(async_task)
+
+                await asyncio.gather(*async_tasks)
+
+            finally:
+                self.save_base_info()
+                await self.browser.close()
+
+    async def login(self):
+        pass
+
+    async def fetch_comic_info(self, retry=0):
+        try:
+
+            async def handle_response(response: Response):
+                if response.ok and (response.request.resource_type == "image"):
+                    await response.finished()
+                    imgdata = await response.body()
+                    self.pices_data[md5(response.url)] = imgdata
+
+            page = await self.get_page()
+            page.on("response", handle_response)
+            await self.fetch_comic_info_sub(page)
+
+            return page
+
+        except Exception as e:
+            Logouter.yellow(e)
+            nretry = retry
+            nretry += 1
+            if nretry <= 5:
+                Logouter.yellow(f'页面{page.url}打开错误,重试={nretry}')
+                await asyncio.sleep(5)
+                await self.fetch_comic_info(retry=nretry)
+            else:
+                Logouter.red(e)
+                Logouter.pic_failed += 1
+                Logouter.crawlog()
+                Logouter.red(f'页面{page.url}打开错误,重试超过最大次数')
+
+    async def fetch_comic_info_sub(self, page):
+        pass
+
+    async def fetch_chapters(self, page):
+        self.chapters = self.config.chapters
+
+    async def fetch_pices(self, chapter, retry=0):
 
         try:
             async with self.semaphore_crawl:
                 # 爬取每个章节图片
                 categories_str = valid_filename(f'{chapter["categories"]}')
                 chapter_str = valid_filename(f'{chapter["title"]}')
-
-                chapter_dir = os.path.join(Comic.get_full_comicdir(), categories_str, chapter_str)
+                chapter_dir = os.path.join(self.full_comic_path, categories_str, chapter_str)
                 test_zip_file = f'{chapter_dir}.zip'
+
+                if chapter['status'] == 1:
+                    Logouter.chapter_successed += 1
+                    Logouter.crawlog()
+                    return
 
                 if os.path.exists(test_zip_file):
                     chapter['status'] = 1
-                    Logouter.chapter_successed += 1
-                    Logouter.crawlog()
+                    return
 
-                if chapter['status'] == 0:
+                chapter_dir = os.path.join(self.full_comic_path, valid_filename(f'{chapter["categories"]}'), valid_filename(f'{chapter["title"]}'))
+                if not os.path.exists(chapter_dir):
+                    os.makedirs(chapter_dir)
 
-                    #{'categories': '單話', 'title': '第13話(19p)', 'url': 'https://tw.manhuagui.com/comic/36962/550128.html', 'status': 0}
-                    await self.fetch_page(chapter['url'], context, self.parser.parse_chapter_page, param={'url': chapter['url'], 'categories': categories_str, 'chapter': chapter_str})
+                return await self.fetch_pices_sub(chapter, chapter_dir)
 
-                    Logouter.chapter_successed += 1
-                    Logouter.crawlog()
         except Exception as e:
             Logouter.yellow(e)
-
             nretry = retry
             nretry += 1
             if nretry <= 5:
-
                 Logouter.yellow(f'页面{chapter["url"]}打开错误,重试={nretry}')
                 await asyncio.sleep(5)
-                await self.parse_chapters(chapter, context, retry=nretry)
-
+                await self.fetch_pices(chapter, retry=nretry)
             else:
                 Logouter.red(e)
                 Logouter.pic_failed += 1
                 Logouter.crawlog()
                 Logouter.red(f'页面{chapter["url"]}打开错误,重试超过最大次数')
 
-    async def start_crawl_task(self):
-
-        async with async_playwright() as p:
-            browser = await p.chromium.launch_persistent_context(user_data_dir=CHROMIUM_USER_DATA_DIR, headless=self.config.headless, accept_downloads=True, args=['--disable-blink-features=AutomationControlled'])
-
-            # 首页爬取章节
-            try:
-                if self.config.checklogin:
-                    await self.fetch_page(Comic.main_url, browser, self.parser.login, param={})
-
-                await self.fetch_page(Comic.main_url, browser, self.parser.parse_main_page, param={})
-
-                # 日志
-                Logouter.comic_name = Comic.gen_comicdir()
-                Logouter.crawlog()
-
-                async_tasks = []
-
-                for _, chapter in Comic.chapters.items():
-                    async_task = asyncio.create_task(self.parse_chapters(chapter, browser))
-                    async_tasks.append(async_task)
-
-                await asyncio.gather(*async_tasks)
-
-            finally:
-                Comic.save_to_json()
-                await browser.close()
-
-    async def fetch_page(self, url, browser: BrowserContext, parse_method, retry=0, param=None):
-
-        pages = len(browser.pages)
-
-        if pages > 0:
-            page = browser.pages[0]
-        else:
-            page = await browser.new_page()
-
-        try:
-            await parse_method(browser, page, url, param)
-
-        except (Error, AttributeError) as e:
-
-            nretry = retry
-            nretry += 1
-            if nretry <= 5:
-                Logouter.yellow(f'页面{url}打开错误,重试={nretry}')
-                await asyncio.sleep(5)
-                await self.fetch_page(url, browser=browser, parse_method=parse_method, retry=nretry, param=param)
-            else:
-                Logouter.red(e.message)
-                Logouter.red(f'页面{url}打开错误,重试超过最大次数')
-
-        # finally:
-        #     await page.close()
+    async def fetch_pices_sub(self, chapter):
+        pass

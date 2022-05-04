@@ -1,18 +1,16 @@
 import asyncio
-from multiprocessing.connection import wait
 import os
-import re
 import urllib
-import lzstring
-from playwright.async_api import Response, Request
+
+from playwright.async_api import Response
 from mods.logouter import Logouter
-from mods.utils import extrat_extname, md5, valid_filename
+from mods.utils import extrat_extname, md5
 from pyquery import PyQuery as pq
 from mods.zipper import Zipper
-from spiders.wspider import WSpider
+from spiders.spider import Spider
 
 
-class BaozimhSpider(WSpider):
+class BaozimhSpider(Spider):
 
     @property
     def name(self):
