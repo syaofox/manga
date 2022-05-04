@@ -11,6 +11,7 @@ from parsers.comic18ex_parser import Comic18exParser
 from parsers.klmag_parser import KlmagPaser
 from parsers.manhuagui_parser import ManhuaguiPaser
 from spiders.comic18_spider import Comic18Spider
+from spiders.klmag_spider import KlmagSpider
 from spiders.manhuagui_spider import ManhuaguiSpider
 from spiders.spider import Spider
 from spiders.wspider import WSpider
@@ -43,23 +44,20 @@ def start_craw(start_url, headless=False, szip=False):
         Logouter.red(f'起始地址错误={comic_url}')
         return
 
+    config = Config(comic_url, maindir, comic_dir_name, chapters, ccount=1, headless=headless)
+
     if ('manhuagui' in comic_url) or ('mhgui' in comic_url):
 
-        # parser = ManhuaguiPaser()
-
-        config = Config(comic_url, maindir, comic_dir_name, chapters, ccount=1, headless=headless)
         spider = ManhuaguiSpider(config=config)
     elif '18comic' in comic_url:
 
-        config = Config(comic_url, maindir, comic_dir_name, chapters, ccount=1, headless=headless)
         spider = Comic18Spider(config=config)
 
+    elif ('klmag' in comic_url) or ('klmanga' in comic_url):
+
+        spider = KlmagSpider(config=config)
+
     spider.run()
-
-    # elif ('klmag' in comic_url) or ('klmanga' in comic_url):
-
-    #     parser = KlmagPaser()
-    #     config = Config(comic_url, maindir, comic_dir_name, chapters, ccount=2, headless=headless)
 
     # elif 'baozimh' in comic_url:
 
