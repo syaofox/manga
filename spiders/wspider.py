@@ -2,18 +2,15 @@ import asyncio
 import os
 import re
 import urllib
-from loguru import logger
-from playwright.async_api import Error, async_playwright, BrowserContext, Response, Page
+import json
 import lzstring
+from playwright.async_api import async_playwright, BrowserContext, Response
 from mods.classes import Config
-from mods.datamgr import Comic
 from mods.logouter import Logouter
 from mods.picchecker import PicChecker
-from mods.settings import CHROMIUM_USER_DATA_DIR, DOWNLOADS_DIR
+from mods.settings import CHROMIUM_USER_DATA_DIR
 from mods.utils import extrat_extname, md5, valid_filename
 from pyquery import PyQuery as pq
-import json
-
 from mods.zipper import Zipper
 
 
