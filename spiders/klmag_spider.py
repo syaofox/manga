@@ -52,6 +52,7 @@ class KlmagSpider(Spider):
         page = await self.get_page()
 
         await page.goto(chapter['url'], wait_until='networkidle', timeout=100000)
+        await page.wait_for_selector('div.chapter-content > p > img.chapter-img')
 
         html = await page.content()
         doc = pq(html)

@@ -33,6 +33,8 @@ def parse_start_url(start_url):
 
 def start_craw(start_url, headless=False, szip=False):
 
+    Logouter.cleardata()
+
     comic_url, maindir, comic_dir_name, chapters = parse_start_url(start_url)
     if not comic_url:
         Logouter.red(f'起始地址错误={comic_url}')

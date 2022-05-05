@@ -26,6 +26,18 @@ class Logouter:
     pic_failed = 0
 
     @classmethod
+    def cleardata(cls):
+        cls.comic_name = ''
+
+        cls.chapter_total = 0
+        cls.chapter_successed = 0
+        cls.chapter_passed = 0
+
+        cls.pic_total = 0
+        cls.pic_crawed = 0
+        cls.pic_failed = 0
+
+    @classmethod
     def timestr(cls):
         return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 
