@@ -1,7 +1,9 @@
+import asyncio
 import os
 import re
 import urllib
 import lzstring
+import time
 
 from mods.logouter import Logouter
 from mods.utils import extrat_extname, md5
@@ -64,6 +66,8 @@ class ManhuaguiSpider(Spider):
 
     async def fetch_pices_sub(self, chapter, chapter_dir):
 
+        start_time = time.time()
+
         page = await self.get_page()
 
         purls = {}
@@ -116,3 +120,6 @@ class ManhuaguiSpider(Spider):
             Logouter.chapter_successed += 1
             Logouter.crawlog()
             self.save_base_info()
+
+        cost_time = time.time() - start_time
+        await asyncio.sleep(5 - cost_time)
