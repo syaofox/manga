@@ -79,3 +79,5 @@ Z:\medias\books\comic\连载\[みつちよ丸]生者的行進\manhuagui.json
 Z:\medias\books\comic\连载\[ムラタコウジ]禁果\AKAI RINGO - RAW\klmag.json
 Z:\medias\books\comic\连载\[ムラタコウジ]禁果\manhuagui.json
 Z:\medias\books\comic\连载\[ムラタコウジ]雙人游戲\18comic.json
+Z:\medias\books\comic\连载\平行天堂【1-181话 全中文】【パラレルパラダイス／Pararel paradaisu】\zerobywtxt.json
+Z:\medias\books\comic\连载\终末的后宫 After World【1-23话 全是中文】【終末のハーレム／After World／終末的後宮】\zerobywtxt.json

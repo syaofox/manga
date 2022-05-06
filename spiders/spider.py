@@ -99,9 +99,6 @@ class Spider:
 
             # 首页爬取章节
             try:
-                # 检测是否登录
-                if self.config.checklogin:
-                    await self.login()
 
                 # 爬取基本信息和章节
                 page = await self.fetch_comic_info()
@@ -128,9 +125,6 @@ class Spider:
             finally:
                 self.save_base_info()
                 await self.browser.close()
-
-    async def login(self):
-        pass
 
     async def handle_response(self, response: Response):
         if response.ok and response.status == 200 and (response.request.resource_type == "image"):

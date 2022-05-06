@@ -11,6 +11,7 @@ from spiders.klmag_spider import KlmagSpider
 from spiders.manhuagui_spider import ManhuaguiSpider
 from spiders.rawdevart_spider import RawdevartSpider
 from spiders.senmanga_spider import SenmangaSpider
+from spiders.zerobywtxt_spider import ZerobywtxtSpider
 
 
 def parse_start_url(start_url):
@@ -54,6 +55,9 @@ def start_craw(start_url, headless=False, szip=False):
         spider = SenmangaSpider(config=config)
     elif 'rawdevart' in comic_url:
         spider = RawdevartSpider(config=config)
+    elif 'zerobywtxt' in comic_url:
+        config = Config(comic_url, maindir, comic_dir_name, chapters, ccount=1, headless=headless, checklogin=True)
+        spider = ZerobywtxtSpider(config=config)
 
     spider.run()
 
