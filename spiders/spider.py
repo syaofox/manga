@@ -140,7 +140,8 @@ class Spider:
                 imgdata = await response.body()
                 self.pices_data[md5(response.url)] = imgdata
             except Exception as e:
-                Logouter.red(f'response error{e}={response}')
+                pass
+                # Logouter.red(f'response error{e}={response}')
 
     async def fetch_comic_info(self, retry=0):
         try:
