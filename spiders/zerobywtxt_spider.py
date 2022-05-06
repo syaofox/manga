@@ -32,7 +32,10 @@ class ZerobywtxtSpider(Spider):
         self.comic_name = doc('#jameson_manhua > div.bofangwrap.rootcate.uk-margin-top.uk-grid-collapse.uk-grid > div.uk-width-expand.uk-first-column > div:nth-child(1) > div.uk-width-expand > div > ul.uk-switcher.uk-margin.pl0.mt5 > li > h3').text()
         if self.comic_name is None:
             raise Exception('获取漫画名字失败')
-        self.author = ''
+        self.author = doc(
+            '#jameson_manhua > div.bofangwrap.rootcate.uk-margin-top.uk-grid-collapse.uk-grid > div.uk-width-expand.uk-first-column > div:nth-child(1) > div.uk-width-expand > div > ul.uk-switcher.uk-margin.pl0.mt5 > li > div:nth-child(2) > a:nth-child(1)'
+        ).text().replace('作者:', '')
+
         self.intro = doc(
             '#jameson_manhua > div.bofangwrap.rootcate.uk-margin-top.uk-grid-collapse.uk-grid > div.uk-width-expand.uk-first-column > div:nth-child(1) > div.uk-width-expand > div > ul.uk-switcher.uk-margin.pl0.mt5 > li > div.uk-alert.xs2.mt5.mb5.pt5.pb5'
         ).text()

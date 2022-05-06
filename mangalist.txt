@@ -81,3 +81,4 @@ Z:\medias\books\comic\连载\[ムラタコウジ]禁果\manhuagui.json
 Z:\medias\books\comic\连载\[ムラタコウジ]雙人游戲\18comic.json
 Z:\medias\books\comic\连载\平行天堂【1-181话 全中文】【パラレルパラダイス／Pararel paradaisu】\zerobywtxt.json
 Z:\medias\books\comic\连载\终末的后宫 After World【1-23话 全是中文】【終末のハーレム／After World／終末的後宮】\zerobywtxt.json
+Z:\medias\books\comic\连载\命运恋人Destiny Lovers【1-94话 全是中文】【デスティニーラバーズ／命運戀人】\zerobywtxt.json
