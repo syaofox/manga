@@ -1,6 +1,7 @@
 import asyncio
 import os
 import json
+from typing import Optional
 
 from playwright.async_api import async_playwright, BrowserContext, Response
 from mods.classes import Config
@@ -15,15 +16,15 @@ class Spider:
     def __init__(self, config) -> None:
         self.config: Config = config
         self.semaphore_crawl = asyncio.Semaphore(self.config.ccount)
-        self.browser: BrowserContext = None
-        self.pices_data = {}
-        self.cover_imgdatas = {}
+        self.browser: Optional[BrowserContext] = None
+        self.pices_data: dict = {}
+        self.cover_imgdatas: dict = {}
 
         self.comic_name = ''
         self.author = ''
         self.intro = ''
         self.cover_url = ''
-        self.chapters = {}
+        self.chapters: dict = {}
 
     @property
     def name(self):
