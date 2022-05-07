@@ -2,47 +2,20 @@ from manga import start_craw
 import fire
 
 
-
-def main(web='all'):
+def main(web=''):
     with open("mangalist.txt", "r", encoding='utf-8') as tf:
         lines = tf.read().split('\n')
 
-    list_18comic = []
-    list_manhuagui = []
-    list_raw = []
-    list_all = []
-
+    count: int = 0
+    tasks: list = []
     for jfile in lines:
-        list_all.append(jfile)
-        if jfile.endswith('18comic.json'):
-            list_18comic.append(jfile)
+        if web in jfile:
+            count += 1
+            tasks.append(jfile)
 
-        elif jfile.endswith('manhuagui.json'):
-            list_manhuagui.append(jfile)
-
-        else:
-            list_raw.append(jfile)
-
-    match web:
-        case "18comic":
-            print(f'总共：{len(list_18comic)}')
-            for jfile in list_18comic:
-                start_craw(jfile)
-        case "manhuagui":
-            print(f'总共：{len(list_manhuagui)}')
-            for jfile in list_manhuagui:
-                start_craw(jfile)
-        case "raw":
-            print(f'总共：{len(list_raw)}')
-            for jfile in list_raw:
-                start_craw(jfile)
-
-        case "all":
-            print(f'总共：{len(list_all)}')
-            for jfile in list_all:
-                start_craw(jfile)
-
-    
+    print(f'{web} 总共：{len(tasks)}')
+    for jfile in tasks:
+        start_craw(jfile)
 
 
 if __name__ == "__main__":
