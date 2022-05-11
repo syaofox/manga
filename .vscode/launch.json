@@ -8,12 +8,12 @@
             "name": "Python: Current File",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/xupdate.py",
+            "program": "${workspaceFolder}/crawler.py",
             "console": "integratedTerminal",
             "justMyCode": true,
             "args": [
-                "zero"
-                // "https://tw.manhuagui.com/comic/30609/"
+                // "zero"
+                "https://tw.manhuagui.com/comic/30609/"
                 // "https://rawdevart.com/comic/dokuzakura/"
             ]
         }
