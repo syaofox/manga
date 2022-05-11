@@ -227,7 +227,7 @@ def run(comic_list_str: str, headless=False, keyword='manhuagui'):
     Logouter.blue(f'开始爬取任务')
     loop = asyncio.get_event_loop()
     crawler = Crawler()
-    clist = ['https://tw.manhuagui.com/comic/42311/', r"C:\Users\syaofox\Downloads\_comix\[ぐらんで]拒當社畜，用視頻養活自己\manhuagui.json"]
+    clist = ['https://tw.manhuagui.com/comic/42311/', "https://tw.manhuagui.com/comic/42314/"]
     loop.run_until_complete(crawler.start_crawl(clist))
     # loop.run_until_complete(crawler.start_crawl([comic_list_str]))
     Logouter.blue('信息爬取完成!')
