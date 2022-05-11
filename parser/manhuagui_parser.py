@@ -1,11 +1,15 @@
+import asyncio
+from mods.zipper import Zipper
 from parser.parser import Parser
 from playwright.async_api import Page
 from pyquery import PyQuery as pq
 import urllib
 import lzstring
-
+import time
 from mods.logouter import Logouter
 from mods.utils import extrat_extname, md5
+import re
+import os
 
 
 class ManhuaguiParser(Parser):
@@ -53,3 +57,62 @@ class ManhuaguiParser(Parser):
                     chapters[keystr] = {'categories': categories, 'title': title, 'url': url, 'status': 0}
 
         return comic_name, author, intro, cover_url
+
+    async def parse_chapter_pices(self, page, chapter, chapter_dir, pices_data, save_image):
+        await super().parse_chapter_pices(page, chapter, chapter_dir, pices_data, save_image)
+
+        start_time = time.time()
+
+        purls = {}
+        cur_idx = -1
+
+        while True:
+            if cur_idx < 0:
+                await page.goto(chapter['url'], wait_until='networkidle', timeout=100000)
+            else:
+                await page.locator('#next').click()
+                # 等待图片加载完成
+            await page.wait_for_selector('#imgLoading', state='hidden')
+
+            html = await page.content()
+            doc = pq(html)
+
+            count_info = doc('body > div.w980.title > div:nth-child(2) > span').text()
+            idxs = re.search(r'\((\d+)/(\d+)\)', count_info)
+            cur_idx = int(idxs.group(1))
+            page_count = int(idxs.group(2))
+
+            if cur_idx == 1:
+                Logouter.pic_total += page_count
+                Logouter.crawlog()
+
+            purl = doc('#mangaFile').attr('src')
+            purl = urllib.parse.quote(purl, safe="[];/?:@&=+$,%")
+            purls[md5(purl)] = os.path.join(chapter_dir, f'{str(cur_idx).zfill(4)}.{extrat_extname(purl)}')
+
+            for urlmd5, pic_fname in purls.copy().items():
+                if save_image(urlmd5, pic_fname):
+                    Logouter.pic_crawed += 1
+                    Logouter.crawlog()
+                    if pices_data.get(urlmd5, None):
+                        pices_data.pop(urlmd5)
+                    purls.pop(urlmd5)
+
+            if cur_idx >= page_count:  # len(purls) >= page_count:
+                downloaded_count = Zipper.count_dir(chapter_dir)
+                if downloaded_count >= page_count:
+                    break
+                else:
+                    cur_idx = 1
+                    await page.goto(chapter['url'], wait_until='networkidle', timeout=100000)
+
+        downloaded_count = Zipper.count_dir(chapter_dir)
+        if downloaded_count == page_count:
+            Zipper.zip(chapter_dir)
+            chapter['status'] = 1
+            Logouter.chapter_successed += 1
+            Logouter.crawlog()
+            # self.save_base_info()
+
+        cost_time = time.time() - start_time
+        await asyncio.sleep(5 - cost_time)
