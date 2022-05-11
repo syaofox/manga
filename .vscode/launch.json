@@ -8,11 +8,11 @@
             "name": "Python: Current File",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/crawler.py",
+            "program": "${workspaceFolder}/xupdate.py",
             "console": "integratedTerminal",
             "justMyCode": true,
             "args": [
-                "Z:\\medias\\books\\comic\\连载\\[ムラタコウジ]禁果\\AKAI RINGO - RAW\\klmag.json"
+                "zero"
                 // "https://tw.manhuagui.com/comic/30609/"
                 // "https://rawdevart.com/comic/dokuzakura/"
             ]

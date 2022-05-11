@@ -1,3 +1,4 @@
+Z:\medias\books\comic\连载\[佐藤健太郎]永生罪罰\manhuagui.json
 Z:\medias\books\comic\坑\[大见武士]神签村\manhuagui.json
 Z:\medias\books\comic\坑\[高濑理惠]江户验尸官\manhuagui.json
 Z:\medias\books\comic\坑\[麻生羽吕]弥留之国的爱丽丝 RETRY\manhuagui.json
@@ -82,3 +83,4 @@ Z:\medias\books\comic\连载\[ムラタコウジ]雙人游戲\18comic.json
 Z:\medias\books\comic\连载\平行天堂【1-181话 全中文】【パラレルパラダイス／Pararel paradaisu】\zerobywtxt.json
 Z:\medias\books\comic\连载\终末的后宫 After World【1-23话 全是中文】【終末のハーレム／After World／終末的後宮】\zerobywtxt.json
 Z:\medias\books\comic\连载\命运恋人Destiny Lovers【1-94话 全是中文】【デスティニーラバーズ／命運戀人】\zerobywtxt.json
+Z:\medias\books\comic\完结\京極夏彥\[京極夏彥 志水明(志水アキ)]百器徒然袋 五德貓 薔薇十字偵探的感慨\manhuagui.json

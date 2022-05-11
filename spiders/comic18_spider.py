@@ -105,12 +105,12 @@ class Comic18Spider(Spider):
         if num == 0:
             return img_data
         stream = BytesIO(img_data)
-        source_img = Image.open(stream).convert("RGBA")
-        w, h = source_img.size
-        decode_img = Image.new("RGB", (w, h))
-        remainder = h % num
-        copyW = w
-        try:
+        with Image.open(stream).convert("RGBA") as source_img:
+            w, h = source_img.size
+            decode_img = Image.new("RGB", (w, h))
+            remainder = h % num
+            copyW = w
+
             for i in range(num):
                 copyH = math.floor(h / num)
                 py = copyH * i
@@ -121,12 +121,8 @@ class Comic18Spider(Spider):
                     py = py + remainder
                 temp_img = source_img.crop((0, y, copyW, y + copyH))
                 decode_img.paste(temp_img, (0, py, copyW, py + copyH))
-            return decode_img
 
-        except Exception:
-            return False
-        finally:
-            stream.close()
+            return decode_img
 
     def save_imageex(self, urlmd5, pic_name, fixparam):
         if os.path.exists(pic_name):
