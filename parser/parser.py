@@ -35,6 +35,6 @@ class Parser:
 
         return True
 
-    async def parse_chapter_pices(self, page, chapter, chapter_dir, pices_data, save_image):
+    async def parse_chapter_pices(self, page, chapter, chapter_dir, save_image):
         if not os.path.exists(chapter_dir):
             os.makedirs(chapter_dir)

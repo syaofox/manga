@@ -58,8 +58,8 @@ class ManhuaguiParser(Parser):
 
         return comic_name, author, intro, cover_url
 
-    async def parse_chapter_pices(self, page, chapter, chapter_dir, pices_data, save_image):
-        await super().parse_chapter_pices(page, chapter, chapter_dir, pices_data, save_image)
+    async def parse_chapter_pices(self, page, chapter, chapter_dir, save_image):
+        await super().parse_chapter_pices(page, chapter, chapter_dir, save_image)
 
         start_time = time.time()
 
@@ -92,10 +92,6 @@ class ManhuaguiParser(Parser):
 
             for urlmd5, pic_fname in purls.copy().items():
                 if save_image(urlmd5, pic_fname):
-                    Logouter.pic_crawed += 1
-                    Logouter.crawlog()
-                    if pices_data.get(urlmd5, None):
-                        pices_data.pop(urlmd5)
                     purls.pop(urlmd5)
 
             if cur_idx >= page_count:  # len(purls) >= page_count:
@@ -106,13 +102,6 @@ class ManhuaguiParser(Parser):
                     cur_idx = 1
                     await page.goto(chapter['url'], wait_until='networkidle', timeout=100000)
 
-        downloaded_count = Zipper.count_dir(chapter_dir)
-        if downloaded_count == page_count:
-            Zipper.zip(chapter_dir)
-            chapter['status'] = 1
-            Logouter.chapter_successed += 1
-            Logouter.crawlog()
-            # self.save_base_info()
-
         cost_time = time.time() - start_time
         await asyncio.sleep(5 - cost_time)
+        return page_count

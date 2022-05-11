@@ -10,6 +10,7 @@ from mods.logouter import Logouter
 from mods.picchecker import PicChecker
 from mods.settings import CHROMIUM_USER_DATA_DIR, DOWNLOADS_DIR
 from playwright.async_api import async_playwright, BrowserContext, Response
+from mods.zipper import Zipper
 from parser.manhuagui_parser import ManhuaguiParser
 from parser.parser import Parser
 from mods.utils import extrat_extname, md5, valid_filename
@@ -98,6 +99,11 @@ class Crawler:
             os.remove(pic_name)
             raise Exception(f'下载失败！下载图片不完整={pic_name}')
 
+        Logouter.pic_crawed += 1
+        Logouter.crawlog()
+        if self.pices_data.get(urlmd5, None):
+            self.pices_data.pop(urlmd5)
+
         return True
 
     async def fetch_pices(self, chapter, retry=0):
@@ -122,7 +128,13 @@ class Crawler:
                 chapter_dir = os.path.join(self.comic_full_dir, valid_filename(f'{chapter["categories"]}'), valid_filename(f'{chapter["title"]}'))
 
                 page = await self.get_page()
-                await self.paser.parse_chapter_pices(page, chapter, chapter_dir, self.pices_data, self.save_image)
+                page_count = await self.paser.parse_chapter_pices(page, chapter, chapter_dir, self.save_image)
+                if page_count == Zipper.count_dir(chapter_dir):
+                    Zipper.zip(chapter_dir)
+                    chapter['status'] = 1
+                    Logouter.chapter_successed += 1
+                    Logouter.crawlog()
+                    self.comic_info.save_data(self.comic_full_dir, self.paser.name)
 
         except Exception as e:
             Logouter.yellow(e)
@@ -190,7 +202,7 @@ class Crawler:
                     self.gen_parser()
 
                     # 爬取基本信息和章节信息
-                    await self.fetch_comic_info(comic_url)
+                    await self.fetch_comic_info(self.comic_url)
                     Logouter.comic_name = self.comic_dir_name
                     if self.chapters:
                         Logouter.chapter_total = len(self.chapters)
@@ -215,7 +227,9 @@ def run(comic_list_str: str, headless=False, keyword='manhuagui'):
     Logouter.blue(f'开始爬取任务')
     loop = asyncio.get_event_loop()
     crawler = Crawler()
-    loop.run_until_complete(crawler.start_crawl([comic_list_str]))
+    clist = ['https://tw.manhuagui.com/comic/42311/', r"C:\Users\syaofox\Downloads\_comix\[ぐらんで]拒當社畜，用視頻養活自己\manhuagui.json"]
+    loop.run_until_complete(crawler.start_crawl(clist))
+    # loop.run_until_complete(crawler.start_crawl([comic_list_str]))
     Logouter.blue('信息爬取完成!')
     # crawler.start_crawl([comic_list_str])
 
