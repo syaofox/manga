@@ -194,7 +194,7 @@ class Crawler:
             try:
 
                 for comic_url in self.comic_list:
-
+                    Logouter.cleardata()
                     # 获得漫画信息
                     self.parse_comic_url(comic_url)
 
@@ -216,22 +216,44 @@ class Crawler:
 
                         await asyncio.gather(*async_tasks)
 
+                    Logouter.comics_successed += 1
+                    Logouter.crawlog()
+
             finally:
                 self.comic_info.set_comic_data(chapters=self.chapters)
                 self.comic_info.save_data(self.comic_full_dir, self.paser.name)
                 await self.browser.close()
 
 
-def run(comic_list_str: str, headless=False, keyword='manhuagui'):
+def fetch_mangalist(web: str = ''):
+    if web.startswith('http') or web.endswith('json'):
+        return [web]
 
-    Logouter.blue(f'开始爬取任务')
+    with open("mangalist.txt", "r", encoding='utf-8') as tf:
+        lines = tf.read().split('\n')
+
+    count: int = 0
+    tasks: list = []
+    for jfile in lines:
+        if web in jfile:
+            count += 1
+            tasks.append(jfile)
+
+    return tasks
+
+
+def run(web: str = '', headless=False, keyword='manhuagui'):
+    clist = fetch_mangalist(web)
+    Logouter.comics_count = len(clist)
+    Logouter.crawlog()
+
     loop = asyncio.get_event_loop()
     crawler = Crawler()
-    clist = ['https://tw.manhuagui.com/comic/42311/', "https://tw.manhuagui.com/comic/42314/"]
+    # clist = ['https://tw.manhuagui.com/comic/42311/', "https://tw.manhuagui.com/comic/42314/"]
+
     loop.run_until_complete(crawler.start_crawl(clist, headless=headless))
-    # loop.run_until_complete(crawler.start_crawl([comic_list_str]))
+
     Logouter.blue('信息爬取完成!')
-    # crawler.start_crawl([comic_list_str])
 
 
 if __name__ == "__main__":

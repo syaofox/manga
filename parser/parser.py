@@ -13,6 +13,9 @@ class Parser:
     def name(self):
         return 'baseparser'
 
+    async def parse_comic_info(self, comic_url, page: Page, chapters):
+        pass
+
     async def parse_chapter_pices(self, page, chapter, chapter_dir, save_image):
         if not os.path.exists(chapter_dir):
             os.makedirs(chapter_dir)
