@@ -228,7 +228,7 @@ def run(comic_list_str: str, headless=False, keyword='manhuagui'):
     loop = asyncio.get_event_loop()
     crawler = Crawler()
     clist = ['https://tw.manhuagui.com/comic/42311/', "https://tw.manhuagui.com/comic/42314/"]
-    loop.run_until_complete(crawler.start_crawl(clist))
+    loop.run_until_complete(crawler.start_crawl(clist, headless=headless))
     # loop.run_until_complete(crawler.start_crawl([comic_list_str]))
     Logouter.blue('信息爬取完成!')
     # crawler.start_crawl([comic_list_str])
