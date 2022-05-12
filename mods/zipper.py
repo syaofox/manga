@@ -29,7 +29,7 @@ class Zipper:
         with zipfile.ZipFile(chapter_dir + '.zip', 'w', zipfile.ZIP_DEFLATED) as zfile:
             for zdname, _, zfnames in os.walk(chapter_dir):
                 names = zdname.split('\\')
-                for zfname in tqdm(zfnames, desc=f'压缩 {names[5]}-{names[7]}'):
+                for zfname in tqdm(zfnames, desc=f'压缩 {names[-3]}-{names[-1]}'):
                     zfile_path = os.path.join(zdname, zfname)
                     zfile.write(zfile_path, zfname)  # 不保存目录结构
         if remove_old_files and os.path.exists(chapter_dir):

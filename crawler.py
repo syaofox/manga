@@ -11,7 +11,9 @@ from mods.picchecker import PicChecker
 from mods.settings import CHROMIUM_USER_DATA_DIR, DOWNLOADS_DIR
 from playwright.async_api import async_playwright, BrowserContext, Response
 from mods.zipper import Zipper
+from parser.baozimh_parser import BaozimhParser
 from parser.comic18_parser import Comic18Parser
+from parser.klmag_parser import KlmagParser
 from parser.manhuagui_parser import ManhuaguiParser
 from parser.parser import Parser
 from mods.utils import extrat_extname, md5, valid_filename
@@ -68,6 +70,10 @@ class Crawler:
             self.parser = ManhuaguiParser()
         elif '18comic' in self.comic_url:
             self.parser = Comic18Parser()
+        elif ('klmag' in self.comic_url) or ('klmanga' in self.comic_url):
+            self.parser = KlmagParser()
+        elif 'baozimh' in self.comic_url:
+            self.parser = BaozimhParser()
 
     async def handle_response(self, response: Response):
         if response.ok and response.status == 200 and (response.request.resource_type == "image"):
@@ -220,11 +226,12 @@ def run(web='', headless=False, keyword='manhuagui'):
     Logouter.comics_count = len(clist)
     Logouter.crawlog()
 
-    loop = asyncio.get_event_loop()
+    # loop = asyncio.get_event_loop()
     crawler = Crawler()
     # clist = ['https://tw.manhuagui.com/comic/42311/', "https://tw.manhuagui.com/comic/42314/"]
 
-    loop.run_until_complete(crawler.start_crawl(clist, headless=headless))
+    # loop.run_until_complete(crawler.start_crawl(clist, headless=headless))
+    asyncio.run(crawler.start_crawl(clist, headless=headless))
 
     Logouter.blue('信息爬取完成!')
 
