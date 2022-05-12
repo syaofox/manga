@@ -22,7 +22,7 @@ class Crawler:
         self.comic_list: Optional[list] = None
 
         self.comic_url: str = ''
-        self.mandir = DOWNLOADS_DIR
+        self.maindir = DOWNLOADS_DIR
         self.comic_dir_name: str = ''
         self.chapters: Optional[dict] = None
 
@@ -36,7 +36,7 @@ class Crawler:
 
     @property
     def comic_full_dir(self):
-        return os.path.join(self.mandir, self.comic_dir_name)
+        return os.path.join(self.maindir, self.comic_dir_name)
 
     async def get_page(self):
         pages = len(self.browser.pages)
@@ -59,7 +59,7 @@ class Crawler:
 
         else:
             self.comic_url = comic_url
-            self.mandir = DOWNLOADS_DIR
+            self.maindir = DOWNLOADS_DIR
             self.comic_dir_name = ''
             self.chapters = {}
 
@@ -242,7 +242,7 @@ def fetch_mangalist(web: str = ''):
     return tasks
 
 
-def run(web: str = '', headless=False, keyword='manhuagui'):
+def run(web='', headless=False, keyword='manhuagui'):
     clist = fetch_mangalist(web)
     Logouter.comics_count = len(clist)
     Logouter.crawlog()
