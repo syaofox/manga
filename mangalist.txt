@@ -1,14 +1,3 @@
-Z:\medias\books\comic\连载\[佐藤健太郎]永生罪罰\manhuagui.json
-Z:\medias\books\comic\坑\[大见武士]神签村\manhuagui.json
-Z:\medias\books\comic\坑\[高濑理惠]江户验尸官\manhuagui.json
-Z:\medias\books\comic\坑\[麻生羽吕]弥留之国的爱丽丝 RETRY\manhuagui.json
-Z:\medias\books\comic\坑\[森恒二]無法島\manhuagui.json
-Z:\medias\books\comic\坑\[室井まさね]狂蝕人種\manhuagui.json
-Z:\medias\books\comic\坑\[盐崎雄二]真一骑当千\manhuagui.json
-Z:\medias\books\comic\坑\[原田重光,かろちー]禁欲进行时\manhuagui.json
-Z:\medias\books\comic\坑\[原田重光,かろちー]禁欲进行时\MEGAMI NO SPRINTER - RAW\klmang.json
-Z:\medias\books\comic\坑\[中村卯月]被愛妄想\manhuagui.json
-Z:\medias\books\comic\坑\[RAZEN,金泽伸明]同類相噬\manhuagui.json
 Z:\medias\books\comic\连载\[安藤岡田]終末的後宮 玄幻版學園\manhuagui.json
 Z:\medias\books\comic\连载\[北河トウタ]學院裡的殺人遊戲\manhuagui.json
 Z:\medias\books\comic\连载\[北崎拓,あかほり悟]天漫浮世錄\manhuagui.json
@@ -34,7 +23,7 @@ Z:\medias\books\comic\连载\[染谷ユウ]罪孽與快感\manhuagui.json
 Z:\medias\books\comic\连载\[森恆二]創世的大河\manhuagui.json
 Z:\medias\books\comic\连载\[山本やみー]毒之櫻\Dokuzakura\rawdevart.json
 Z:\medias\books\comic\连载\[山本やみー]毒之櫻\manhuagui.json
-Z:\medias\books\comic\连载\[山本やみー]罪惡社團\GUILTY CIRCLE\klmang.json
+Z:\medias\books\comic\连载\[山本やみー]罪惡社團\GUILTY CIRCLE\klmag.json
 Z:\medias\books\comic\连载\[山本やみー]罪惡社團\manhuagui.json
 Z:\medias\books\comic\连载\[山田惠庸]邪靈附體\manhuagui.json
 Z:\medias\books\comic\连载\[山田惠庸]邪靈附體\SATANOPHANY - RAW\klmag.json
@@ -65,9 +54,10 @@ Z:\medias\books\comic\连载\[志名阪高次 粂田晃宏]Monkey Peak\manhuagui
 Z:\medias\books\comic\连载\[智弘櫂 カズタカ]命運戀人Destiny Lovers\DESTINY LOVERS (MANGA) - RAW\klmag.json
 Z:\medias\books\comic\连载\[智弘櫂 カズタカ]命運戀人Destiny Lovers\manhuagui.json
 Z:\medias\books\comic\连载\[中村卯月]異世界治癒師修行中！！\manhuagui.json
-Z:\medias\books\comic\连载\[朱井よしお]祕密的果實\HIMITSU NO KAJITSU - RAW\klmang.json
+Z:\medias\books\comic\连载\[朱井よしお]祕密的果實\HIMITSU NO KAJITSU - RAW\klmag.json
 Z:\medias\books\comic\连载\[朱井よしお]祕密的果實\manhuagui.json
 Z:\medias\books\comic\连载\[竹村洋平 タカヒロ]魔都精兵的奴隸\manhuagui.json
+Z:\medias\books\comic\连载\[佐藤健太郎]永生罪罰\manhuagui.json
 Z:\medias\books\comic\连载\[佐藤文也]金田一37歲事件簿\manhuagui.json
 Z:\medias\books\comic\连载\[savan LINK]終末的後宮 玄幻版\manhuagui.json
 Z:\medias\books\comic\连载\[savan LINK]終末的後宮 玄幻版\WORLDS END HAREM FANTASIA - RAW\klmag.json
@@ -80,6 +70,16 @@ Z:\medias\books\comic\连载\[みつちよ丸]生者的行進\manhuagui.json
 Z:\medias\books\comic\连载\[ムラタコウジ]禁果\AKAI RINGO - RAW\klmag.json
 Z:\medias\books\comic\连载\[ムラタコウジ]禁果\manhuagui.json
 Z:\medias\books\comic\连载\[ムラタコウジ]雙人游戲\18comic.json
+Z:\medias\books\comic\连载\命运恋人Destiny Lovers【1-94话 全是中文】【デスティニーラバーズ／命運戀人】\zerobywtxt.json
 Z:\medias\books\comic\连载\平行天堂【1-181话 全中文】【パラレルパラダイス／Pararel paradaisu】\zerobywtxt.json
 Z:\medias\books\comic\连载\终末的后宫 After World【1-23话 全是中文】【終末のハーレム／After World／終末的後宮】\zerobywtxt.json
-Z:\medias\books\comic\连载\命运恋人Destiny Lovers【1-94话 全是中文】【デスティニーラバーズ／命運戀人】\zerobywtxt.json
+Z:\medias\books\comic\坑\[室井まさね]狂蝕人種\manhuagui.json
+Z:\medias\books\comic\坑\[盐崎雄二]真一骑当千\manhuagui.json
+Z:\medias\books\comic\坑\[原田重光,かろちー]禁欲进行时\manhuagui.json
+Z:\medias\books\comic\坑\[中村卯月]被愛妄想\manhuagui.json
+Z:\medias\books\comic\坑\[原田重光,かろちー]禁欲进行时\MEGAMI NO SPRINTER - RAW\klmag.json
+Z:\medias\books\comic\坑\[RAZEN,金泽伸明]同類相噬\manhuagui.json
+Z:\medias\books\comic\坑\[大见武士]神签村\manhuagui.json
+Z:\medias\books\comic\坑\[高濑理惠]江户验尸官\manhuagui.json
+Z:\medias\books\comic\坑\[麻生羽吕]弥留之国的爱丽丝 RETRY\manhuagui.json
+Z:\medias\books\comic\坑\[森恒二]無法島\manhuagui.json
