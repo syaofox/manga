@@ -18,6 +18,7 @@ from parser.manhuagui_parser import ManhuaguiParser
 from parser.parser import Parser
 from mods.utils import extrat_extname, md5, valid_filename
 from parser.rawdevart_parser import RawdevartParser
+from parser.xmanhua_parser import XmanhuaParser
 from parser.zerobywtxt_parser import ZerobywtxtParser
 
 
@@ -80,6 +81,8 @@ class Crawler:
             self.parser = RawdevartParser()
         elif 'zerobywtxt' in self.comic_url:
             self.parser = ZerobywtxtParser()
+        elif 'xmanhua' in self.comic_url:
+            self.parser = XmanhuaParser()
 
     async def handle_response(self, response: Response):
         if response.ok and response.status == 200 and (response.request.resource_type == "image"):
