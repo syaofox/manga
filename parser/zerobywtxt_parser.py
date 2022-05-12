@@ -62,7 +62,9 @@ class ZerobywtxtParser(Parser):
         html = await page.content()
         doc = pq(html)
 
-        els = doc('#jameson_manhua > div.uk-margin-top > div.uk-zjimg.uk-text-center.uk-padding.uk-margin-top.uk-margin-bottom.uk-inline > div > img')
+        els = doc('#jameson_manhua > div.uk-zjimg.uk-text-center.uk-padding.uk-margin-top.uk-margin-bottom.uk-inline.xiala2 > div > img')
+        if not els:
+            els = doc('#jameson_manhua > div.uk-margin-top > div.uk-zjimg.uk-text-center.uk-padding.uk-margin-top.uk-margin-bottom.uk-inline > div > img')
         page_count = len(els)
         Logouter.pic_total += page_count
         Logouter.crawlog()
