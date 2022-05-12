@@ -11,6 +11,7 @@ from mods.picchecker import PicChecker
 from mods.settings import CHROMIUM_USER_DATA_DIR, DOWNLOADS_DIR
 from playwright.async_api import async_playwright, BrowserContext, Response
 from mods.zipper import Zipper
+from parser.comic18_parser import Comic18Parser
 from parser.manhuagui_parser import ManhuaguiParser
 from parser.parser import Parser
 from mods.utils import extrat_extname, md5, valid_filename
@@ -28,10 +29,8 @@ class Crawler:
 
         self.browser: Optional[BrowserContext] = None
 
-        self.paser: Parser = Parser()
-        self.pices_data: dict = {}
+        self.parser: Parser = Parser()
 
-        self.comic_info = ComicInfo()
         self.semaphore_crawl = asyncio.Semaphore(1)
 
     @property
@@ -64,9 +63,11 @@ class Crawler:
             self.chapters = {}
 
     def gen_parser(self):
-        self.paser = Parser()
+        self.parser = Parser()
         if ('manhuagui' in self.comic_url) or ('mhgui' in self.comic_url):
-            self.paser = ManhuaguiParser()
+            self.parser = ManhuaguiParser()
+        elif '18comic' in self.comic_url:
+            self.parser = Comic18Parser()
 
     async def handle_response(self, response: Response):
         if response.ok and response.status == 200 and (response.request.resource_type == "image"):
@@ -74,37 +75,10 @@ class Crawler:
             try:
                 # await response.finished()
                 imgdata = await response.body()
-                self.pices_data[md5(response.url)] = imgdata
+                self.parser.pices_data[md5(response.url)] = imgdata
             except Exception as e:
                 pass
                 # Logouter.red(f'response error{e}={response}')
-
-    def save_image(self, urlmd5, pic_name):
-
-        if os.path.exists(pic_name):
-            if PicChecker.valid_pic(pic_name):
-                return True
-            else:
-                os.remove(pic_name)
-
-        imgdata = self.pices_data.get(urlmd5, None)
-
-        if not imgdata:
-            return False
-
-        with open(pic_name, 'wb') as f:
-            f.write(imgdata)
-
-        if not PicChecker.valid_pic(pic_name):
-            os.remove(pic_name)
-            raise Exception(f'下载失败！下载图片不完整={pic_name}')
-
-        Logouter.pic_crawed += 1
-        Logouter.crawlog()
-        if self.pices_data.get(urlmd5, None):
-            self.pices_data.pop(urlmd5)
-
-        return True
 
     async def fetch_pices(self, chapter, retry=0):
 
@@ -128,13 +102,13 @@ class Crawler:
                 chapter_dir = os.path.join(self.comic_full_dir, valid_filename(f'{chapter["categories"]}'), valid_filename(f'{chapter["title"]}'))
 
                 page = await self.get_page()
-                page_count = await self.paser.parse_chapter_pices(page, chapter, chapter_dir, self.save_image)
+                page_count = await self.parser.parse_chapter_pices(page, chapter, chapter_dir)
                 if page_count == Zipper.count_dir(chapter_dir):
                     Zipper.zip(chapter_dir)
                     chapter['status'] = 1
                     Logouter.chapter_successed += 1
                     Logouter.crawlog()
-                    self.comic_info.save_data(self.comic_full_dir, self.paser.name)
+                    self.parser.comic_info.save_data(self.comic_full_dir, self.parser.name)
 
         except Exception as e:
             Logouter.yellow(e)
@@ -155,17 +129,16 @@ class Crawler:
 
             page = await self.get_page()
             page.on("response", self.handle_response)
-            comic_name, author, intro, cover_url = await self.paser.parse_comic_info(comic_url, page, self.chapters)
+            comic_name, author, intro, cover_url = await self.parser.parse_comic_info(comic_url, page, self.chapters)
 
             if not self.comic_dir_name:
                 self.comic_dir_name = valid_filename(f'[{author}]{comic_name}' if author else comic_name)
 
-            self.comic_info.set_comic_data(comic_name, comic_url, author, intro, self.chapters)
-            self.comic_info.save_data(self.comic_full_dir, self.paser.name)
+            self.parser.comic_info.set_comic_data(comic_name, comic_url, author, intro, self.chapters)
+            self.parser.comic_info.save_data(self.comic_full_dir, self.parser.name)
 
             #下载封面
-            cover_fname = os.path.join(self.comic_full_dir, f'cover.{extrat_extname(cover_url)}')
-            self.save_image(md5(cover_url), cover_fname)
+            self.parser.save_cover(self.comic_full_dir, cover_url)
 
         except Exception as e:
             Logouter.yellow(e)
@@ -220,8 +193,8 @@ class Crawler:
                     Logouter.crawlog()
 
             finally:
-                self.comic_info.set_comic_data(chapters=self.chapters)
-                self.comic_info.save_data(self.comic_full_dir, self.paser.name)
+                self.parser.comic_info.set_comic_data(chapters=self.chapters)
+                self.parser.comic_info.save_data(self.comic_full_dir, self.parser.name)
                 await self.browser.close()
 
 

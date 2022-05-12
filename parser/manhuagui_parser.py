@@ -59,8 +59,8 @@ class ManhuaguiParser(Parser):
 
         return comic_name, author, intro, cover_url
 
-    async def parse_chapter_pices(self, page, chapter, chapter_dir, save_image):
-        await super().parse_chapter_pices(page, chapter, chapter_dir, save_image)
+    async def parse_chapter_pices(self, page, chapter, chapter_dir):
+        await super().parse_chapter_pices(page, chapter, chapter_dir)
 
         start_time = time.time()
 
@@ -92,7 +92,7 @@ class ManhuaguiParser(Parser):
             purls[md5(purl)] = os.path.join(chapter_dir, f'{str(cur_idx).zfill(4)}.{extrat_extname(purl)}')
 
             for urlmd5, pic_fname in purls.copy().items():
-                if save_image(urlmd5, pic_fname):
+                if self.save_image(urlmd5, pic_fname):
                     purls.pop(urlmd5)
 
             if cur_idx >= page_count:  # len(purls) >= page_count:
