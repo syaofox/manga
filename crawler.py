@@ -17,6 +17,8 @@ from parser.klmag_parser import KlmagParser
 from parser.manhuagui_parser import ManhuaguiParser
 from parser.parser import Parser
 from mods.utils import extrat_extname, md5, valid_filename
+from parser.rawdevart_parser import RawdevartParser
+from parser.zerobywtxt_parser import ZerobywtxtParser
 
 
 class Crawler:
@@ -74,6 +76,10 @@ class Crawler:
             self.parser = KlmagParser()
         elif 'baozimh' in self.comic_url:
             self.parser = BaozimhParser()
+        elif 'rawdevart' in self.comic_url:
+            self.parser = RawdevartParser()
+        elif 'zerobywtxt' in self.comic_url:
+            self.parser = ZerobywtxtParser()
 
     async def handle_response(self, response: Response):
         if response.ok and response.status == 200 and (response.request.resource_type == "image"):
