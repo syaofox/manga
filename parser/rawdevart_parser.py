@@ -1,11 +1,6 @@
-import asyncio
 import urllib
-import lzstring
-import time
-import re
 import os
 
-from mods.zipper import Zipper
 from parser.parser import Parser
 from playwright.async_api import Page
 from pyquery import PyQuery as pq

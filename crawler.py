@@ -185,9 +185,14 @@ class Crawler:
                     Logouter.cleardata()
                     # 获得漫画信息
                     self.parse_comic_url(comic_url)
-
+                    if self.comic_url == '' or self.comic_url is None:
+                        Logouter.red(f'{comic_url} 解析不到漫画信息')
+                        continue
                     # 获得parser
                     self.gen_parser()
+                    if self.parser.name == 'baseparser':
+                        Logouter.red(f'{comic_url} 获取不到解析器')
+                        continue
 
                     # 爬取基本信息和章节信息
                     await self.fetch_comic_info(self.comic_url)
@@ -206,10 +211,11 @@ class Crawler:
 
                     Logouter.comics_successed += 1
                     Logouter.crawlog()
+                    self.parser.comic_info.set_comic_data(chapters=self.chapters)
+                    self.parser.comic_info.save_data(self.comic_full_dir, self.parser.name)
 
             finally:
-                self.parser.comic_info.set_comic_data(chapters=self.chapters)
-                self.parser.comic_info.save_data(self.comic_full_dir, self.parser.name)
+
                 await self.browser.close()
 
 

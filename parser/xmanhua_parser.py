@@ -1,6 +1,5 @@
 import asyncio
 import urllib
-import lzstring
 import time
 import re
 import os
