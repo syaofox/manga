@@ -85,3 +85,4 @@ Z:\medias\books\comic\坑\[麻生羽吕]弥留之国的爱丽丝 RETRY\manhuagui
 Z:\medias\books\comic\坑\[森恒二]無法島\manhuagui.json
 Z:\medias\books\comic\连载\[村田浩二]禁果\xmanhua.json
 Z:\medias\books\comic\完结\高桥留美子\[高橋留美子]摩緒\manhuagui.json
+Z:\medias\books\comic\连载\[矢吹健太郎 code_000]DARLING in the FRANXX\manhuagui.json
