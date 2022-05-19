@@ -86,3 +86,5 @@ Z:\medias\books\comic\坑\[森恒二]無法島\manhuagui.json
 Z:\medias\books\comic\连载\[村田浩二]禁果\xmanhua.json
 Z:\medias\books\comic\完结\高桥留美子\[高橋留美子]摩緒\manhuagui.json
 Z:\medias\books\comic\连载\[矢吹健太郎 code_000]DARLING in the FRANXX\manhuagui.json
+Z:\medias\books\comic\连载\[今井祐]阿達曼石的魔女們\manhuagui.json
+Z:\medias\books\comic\连载\[今井祐]阿達曼石的魔女們\ADAMAS WITCHES - RAW\klmag.json
