@@ -22,6 +22,8 @@ class Parser:
 
         if os.path.exists(pic_name):
             if PicChecker.valid_pic(pic_name):
+                Logouter.pic_crawed += 1
+                Logouter.crawlog()
                 return True
             else:
                 os.remove(pic_name)
