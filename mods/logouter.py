@@ -63,6 +63,8 @@ class Logouter:
 
     @classmethod
     def crawlog(cls):
+        if not cls.comic_name:
+            return
         msg = (f'\r[{cls.timestr()}][漫画数:\033[1;36;1m{cls.comics_successed}\033[0m/\033[1;36;1m{cls.comics_count}\033[0m]<\033[1;36;1m{cls.comic_name}\033[0m>章节:\033[1;33;1m{cls.chapter_successed}\033[0m/\033[1;33;1m{cls.chapter_total}\033[0m | '
                f'图片:\033[1;33;1m{cls.pic_crawed}\033[0m/\033[1;33;1m{cls.pic_total}\033[0m 失败:\033[1;31;1m{cls.pic_failed}\033[0m')
         print(msg, end='', flush=True)
