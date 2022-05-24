@@ -88,3 +88,5 @@ Z:\medias\books\comic\完结\高桥留美子\[高橋留美子]摩緒\manhuagui.j
 Z:\medias\books\comic\连载\[矢吹健太郎 code_000]DARLING in the FRANXX\manhuagui.json
 Z:\medias\books\comic\连载\[今井祐]阿達曼石的魔女們\manhuagui.json
 Z:\medias\books\comic\连载\[今井祐]阿達曼石的魔女們\ADAMAS WITCHES - RAW\klmag.json
+Z:\medias\books\comic\连载\[池上遼一 稻垣理一郎]Trillion Game\manhuagui.json
+Z:\medias\books\comic\连载\[原泰久]王者天下\manhuagui.json

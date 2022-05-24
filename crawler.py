@@ -96,7 +96,7 @@ class Crawler:
                 # Logouter.red(f'response error{e}={response}')
 
     async def fetch_pices(self, chapter, retry=0):
-
+        page_count = 0
         try:
             async with self.semaphore_crawl:
                 # 爬取每个章节图片
@@ -133,6 +133,7 @@ class Crawler:
                 Logouter.yellow(f'页面{chapter["url"]}打开错误,重试={nretry}')
                 await asyncio.sleep(5)
                 await self.fetch_pices(chapter, retry=nretry)
+                Logouter.pic_total -= page_count
             else:
                 Logouter.red(e)
                 Logouter.pic_failed += 1
