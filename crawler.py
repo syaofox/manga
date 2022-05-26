@@ -16,7 +16,7 @@ from parser.comic18_parser import Comic18Parser
 from parser.klmag_parser import KlmagParser
 from parser.manhuagui_parser import ManhuaguiParser
 from parser.parser import Parser
-from mods.utils import extrat_extname, md5, valid_filename
+from mods.utils import extrat_extname, findJsonFile, md5, valid_filename
 from parser.rawdevart_parser import RawdevartParser
 from parser.xmanhua_parser import XmanhuaParser
 from parser.zerobywtxt_parser import ZerobywtxtParser
@@ -220,24 +220,28 @@ class Crawler:
                 await self.browser.close()
 
 
-def fetch_mangalist(web: str = ''):
+def fetch_mangalist(web):
     if web.startswith('http') or web.endswith('json'):
         return [web]
 
-    with open("mangalist.txt", "r", encoding='utf-8') as tf:
-        lines = tf.read().split('\n')
-
-    count: int = 0
     tasks: list = []
-    for jfile in lines:
-        if web in jfile:
-            count += 1
-            tasks.append(jfile)
+    if os.path.isdir(web):
+        tasks = findJsonFile(web)
+
+    # with open("mangalist.txt", "r", encoding='utf-8') as tf:
+    #     lines = tf.read().split('\n')
+
+    # count: int = 0
+    # tasks: list = []
+    # for jfile in lines:
+    #     if web in jfile:
+    #         count += 1
+    #         tasks.append(jfile)
 
     return tasks
 
 
-def run(web='', headless=False, keyword='manhuagui'):
+def run(web='Z:\\medias\\books\\comic\\连载', headless=False, keyword='manhuagui'):
     clist = fetch_mangalist(web)
     Logouter.comics_count = len(clist)
     Logouter.crawlog()

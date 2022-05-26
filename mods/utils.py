@@ -1,3 +1,4 @@
+import os
 import re
 import hashlib
 
@@ -30,3 +31,13 @@ def extrat_extname(url):
         return re.search(r'.*(jpeg|jpg|png|webp|gif|bmp)', url, re.IGNORECASE).group(1)
     except (TypeError, AttributeError):
         return ''
+
+
+def findJsonFile(base):
+    flist = []
+    for root, ds, fs in os.walk(base):
+        for f in fs:
+            if f.endswith('json'):
+                flist.append(os.path.join(root, f))
+
+    return flist
