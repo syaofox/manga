@@ -62,6 +62,10 @@ class ManhuaguiParser(Parser):
     async def parse_chapter_pices(self, page, chapter, chapter_dir):
         await super().parse_chapter_pices(page, chapter, chapter_dir)
 
+        # 点击显示成人内容
+        if await page.query_selector('#checkAdult'):
+            await page.click('#checkAdult')
+
         start_time = time.time()
 
         purls = {}
@@ -88,7 +92,10 @@ class ManhuaguiParser(Parser):
                 Logouter.crawlog()
 
             purl = doc('#mangaFile').attr('src')
-            purl = urllib.parse.quote(purl, safe="[];/?:@&=+$,%")
+
+            #https://i.hamreus.com/ps1/t/tunshirenjian/origin90(下)/14.jpg.webp?e=1654878550&m=6yu3viVowUUstmQOZ_heBg
+            purl = urllib.parse.quote(purl, safe="[];/?:@&=+$,%()")
+
             purls[md5(purl)] = os.path.join(chapter_dir, f'{str(cur_idx).zfill(4)}.{extrat_extname(purl)}')
 
             for urlmd5, pic_fname in purls.copy().items():
