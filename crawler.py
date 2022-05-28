@@ -1,4 +1,5 @@
 import asyncio
+import time
 from typing import Optional
 import fire
 import json
@@ -57,6 +58,9 @@ class Crawler:
                 jdata = json.load(load_f)
 
                 self.comic_url = jdata.get('url', None)
+                if not self.comic_url:
+                    self.comic_url = jdata.get('main_url', None)
+
                 self.maindir = os.path.dirname(os.path.dirname(comic_url))
                 self.comic_dir_name = os.path.basename(os.path.dirname(comic_url))
                 self.chapters = jdata.get('chapters', {})
@@ -112,6 +116,8 @@ class Crawler:
 
                 if os.path.exists(test_zip_file):
                     chapter['status'] = 1
+                    Logouter.chapter_successed += 1
+                    Logouter.crawlog()
                     return
 
                 chapter_dir = os.path.join(self.comic_full_dir, valid_filename(f'{chapter["categories"]}'), valid_filename(f'{chapter["title"]}'))
@@ -155,6 +161,8 @@ class Crawler:
 
             #下载封面
             self.parser.save_cover(self.comic_full_dir, cover_url)
+            Logouter.pic_total += 1
+            Logouter.crawlog()
 
         except Exception as e:
             Logouter.yellow(e)
@@ -183,11 +191,18 @@ class Crawler:
             try:
 
                 for comic_url in self.comic_list:
+
+                    if 'manhuagui' in comic_url:
+
+                        start_time = time.time()
+
                     Logouter.cleardata()
                     # 获得漫画信息
                     self.parse_comic_url(comic_url)
                     if self.comic_url == '' or self.comic_url is None:
                         Logouter.red(f'{comic_url} 解析不到漫画信息')
+                        Logouter.comics_successed += 1
+                        Logouter.crawlog()
                         continue
                     # 获得parser
                     self.gen_parser()
@@ -214,6 +229,10 @@ class Crawler:
                     Logouter.crawlog()
                     self.parser.comic_info.set_comic_data(chapters=self.chapters)
                     self.parser.comic_info.save_data(self.comic_full_dir, self.parser.name)
+
+                    if 'manhuagui' in comic_url:
+                        cost_time = time.time() - start_time
+                        await asyncio.sleep(3 - cost_time)
 
             finally:
 
