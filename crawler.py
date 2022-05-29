@@ -109,12 +109,14 @@ class Crawler:
                 chapter_dir = os.path.join(self.comic_full_dir, categories_str, chapter_str)
                 test_zip_file = f'{chapter_dir}.zip'
 
+                test_zip_file2 = f'{chapter_dir.replace("话","話")}.zip'
+
                 if chapter['status'] == 1:
                     Logouter.chapter_successed += 1
                     Logouter.crawlog()
                     return
 
-                if os.path.exists(test_zip_file):
+                if os.path.exists(test_zip_file) or os.path.exists(test_zip_file2):
                     chapter['status'] = 1
                     Logouter.chapter_successed += 1
                     Logouter.crawlog()
