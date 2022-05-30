@@ -117,6 +117,9 @@ class Comic18Parser(Parser):
         await page.goto(comic_url, wait_until='networkidle', timeout=100000)
         await self.click_popup(page)
 
+        # 检测是否登录
+        await page.wait_for_selector("a:text-is('登出')", timeout=300000)
+
         html = await page.content()
         doc = pq(html)
 
