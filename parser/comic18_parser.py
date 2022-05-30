@@ -118,7 +118,8 @@ class Comic18Parser(Parser):
         await self.click_popup(page)
 
         # 检测是否登录
-        await page.wait_for_selector("a:text-is('登出')", timeout=300000)
+        await page.wait_for_selector('.far.fa-user-circle', state='hidden')
+        # await page.wait_for_selector("a:text-is('登出')", timeout=300000)
 
         html = await page.content()
         doc = pq(html)
