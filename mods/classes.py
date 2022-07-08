@@ -48,6 +48,9 @@ class ComicInfo:
 
     def save_data(self, comic_full_dir, fname):
 
+        if self.comic_url == '':
+            return
+
         if not os.path.exists(comic_full_dir):
             os.makedirs(comic_full_dir)
 

@@ -23,6 +23,8 @@ class ManhuaguiParser(Parser):
 
         await page.goto(comic_url, wait_until='networkidle', timeout=100000)
 
+        await page.wait_for_selector("a:text-is('註銷')", timeout=300000)
+
         html = await page.content()
         doc = pq(html)
 

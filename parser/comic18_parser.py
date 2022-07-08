@@ -8,7 +8,7 @@ from parser.parser import Parser
 from playwright.async_api import Page
 from pyquery import PyQuery as pq
 from mods.logouter import Logouter
-from mods.utils import extrat_extname, md5
+from mods.utils import extrat_extname, md5, valid_filename
 from PIL import Image
 from io import BytesIO
 
@@ -38,8 +38,9 @@ class Comic18Parser(Parser):
         '''
         #220980
         #268850
-        pattern = '/([0-9]*)\.jpg'
-        l = re.findall(pattern, img_url)[0]
+        pattern = '/([0-9]*)\.(jpg|webp)'
+        # pattern = '/([0-9]*)\.+'
+        l = re.findall(pattern, img_url)[0][0]
         num = 0
         if aid < 220980:
             num = 0
@@ -144,10 +145,11 @@ class Comic18Parser(Parser):
         if len(els) <= 0:
             surl = doc('a.reading').attr('href')
             url = urllib.parse.urljoin(page.url, surl.strip('\n'))
-            title = '全一卷'
+            title = valid_filename(f'[{author}]{comic_name}')
+
             keystr = md5(url)
             if not chapters.get(keystr, None):
-                chapters[keystr] = {'categories': '连载', 'title': title, 'url': url, 'status': 0}
+                chapters[keystr] = {'categories': '', 'title': title, 'url': url, 'status': 0}
 
         return comic_name, author, intro, cover_url
 

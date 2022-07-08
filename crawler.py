@@ -53,6 +53,7 @@ class Crawler:
         return page
 
     def parse_comic_url(self, comic_url):
+
         if comic_url.endswith('json'):
             with open(comic_url, 'r', encoding='utf-8') as load_f:
                 jdata = json.load(load_f)
@@ -77,7 +78,7 @@ class Crawler:
             self.parser = ManhuaguiParser()
         elif '18comic' in self.comic_url:
             self.parser = Comic18Parser()
-        elif ('klmag' in self.comic_url) or ('klmanga' in self.comic_url):
+        elif 'klmanga' in self.comic_url:
             self.parser = KlmagParser()
         elif 'baozimh' in self.comic_url:
             self.parser = BaozimhParser()
@@ -180,7 +181,7 @@ class Crawler:
                 Logouter.crawlog()
                 Logouter.red(f'页面{page.url}打开错误,重试超过最大次数')
 
-    async def start_crawl(self, comic_list: list = None, headless=False):
+    async def start_crawl(self, comic_list: list, headless, keyword):
         if comic_list:
             self.comic_list = comic_list
         else:
@@ -197,6 +198,9 @@ class Crawler:
                     if 'manhuagui' in comic_url:
 
                         start_time = time.time()
+
+                    if not keyword in comic_url:
+                        continue
 
                     Logouter.cleardata()
                     # 获得漫画信息
@@ -262,7 +266,7 @@ def fetch_mangalist(web):
     return tasks
 
 
-def run(web='Z:\\medias\\books\\comic\\连载', headless=False, keyword='manhuagui'):
+def run(web='Z:\\medias\\books\\comic\\连载', headless=False, keyword=''):
     clist = fetch_mangalist(web)
     Logouter.comics_count = len(clist)
     Logouter.crawlog()
@@ -272,7 +276,7 @@ def run(web='Z:\\medias\\books\\comic\\连载', headless=False, keyword='manhuag
     # clist = ['https://tw.manhuagui.com/comic/42311/', "https://tw.manhuagui.com/comic/42314/"]
 
     # loop.run_until_complete(crawler.start_crawl(clist, headless=headless))
-    asyncio.run(crawler.start_crawl(clist, headless=headless))
+    asyncio.run(crawler.start_crawl(clist, headless=headless, keyword=keyword))
 
     Logouter.blue('信息爬取完成!')
 
